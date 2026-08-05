@@ -1,0 +1,37 @@
+<!-- Outer wrapper to handle the gray background split behind the box -->
+<div class="relative w-full global-px  bg-white py-12">
+  <div class="absolute bottom-0 left-0 right-0 h-1/2 bg-[#F0F0F0]"></div>
+
+  <!-- The Main Black Container -->
+  <div class="relative   max-w-6xl rounded-2xl bg-black px-6 py-9 flex flex-col md:flex-row items-center justify-between gap-8">
+    
+    <!-- Left Side Text -->
+    <h2 class="max-w-md text-3xl  font-black tracking-tight text-white uppercase leading-tight">
+      Stay upto date about our latest offers
+    </h2>
+
+    <!-- Right Side Form Inputs -->
+    <div class="flex w-full max-w-sm flex-col gap-4">
+      <!-- Email Input Field -->
+      <div class="relative flex items-center">
+        <span class="absolute left-4 text-gray-400">
+          <!-- Envelope Icon -->
+          <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+          </svg>
+        </span>
+        <input 
+          type="email" 
+          placeholder="Enter your email address" 
+          class="w-full rounded-full bg-white py-3 pl-12 pr-4 text-sm text-black placeholder-gray-400 focus:outline-none"
+        />
+      </div>
+
+      <!-- Subscribe Button -->
+      <button class="w-full rounded-full bg-white py-3 text-center text-sm font-medium text-black hover:bg-gray-100 transition-colors">
+        Subscribe to Newsletter
+      </button>
+    </div>
+
+  </div>
+</div>

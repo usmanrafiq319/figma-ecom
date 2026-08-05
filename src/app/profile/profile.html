@@ -1,0 +1,117 @@
+<div class="flex flex-col justify-center items-center">
+     <button class="px-8 py-3 bg-black mx-auto text-white my-4 font-medium rounded-full hover:bg-gray-800 transition-all duration-200" routerLink="/reset-password">
+  Reset Password
+</button>
+<div class="max-w-xl mx-auto  my-8 p-6 bg-white rounded-xl shadow-md border border-slate-100">
+  <!-- Loading State Spinner -->
+
+  @if (isLoading()) {
+    <div class="flex flex-col items-center justify-center py-12 space-y-4">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-indigo-600"></div>
+      <p class="text-sm font-medium text-slate-500">Loading your profile details...</p>
+    </div>
+  } @else {
+
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 tracking-tight">
+      {{ isEditMode() ? 'Edit Your Profile' : 'Create Your Profile' }}
+    </h2>
+
+    <!-- Global Feedback Alert Messages -->
+    @if (errorMessage()) {
+      <div class="mb-4 p-4 text-sm text-red-800 bg-red-50 rounded-lg border border-red-200" role="alert">
+        <span class="font-semibold">Error:</span> {{ errorMessage() }}
+      </div>
+    }
+    @if (successMessage()) {
+      <div class="mb-4 p-4 text-sm text-emerald-800 bg-emerald-50 rounded-lg border border-emerald-200" role="alert">
+        <span class="font-semibold">Success:</span> {{ successMessage() }}
+      </div>
+    }
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      
+      <!-- Profile Avatar Image Upload Area -->
+      <div class="flex flex-col items-center p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+        <label class="block text-sm font-semibold text-slate-700 mb-3 self-start">Profile Picture</label>
+        
+        <!-- Avatar Display -->
+        <div class="relative w-28 h-28 mb-4 rounded-full overflow-hidden bg-slate-200 border-2 border-white shadow-inner flex items-center justify-center group">
+          @if (imagePreview) {
+            <img [src]="imagePreview" alt="Profile View" class="w-full h-full object-cover" />
+          } @else {
+            <div class="text-center text-2xl font-bold text-slate-400 select-none">
+              {{ getUserInitials() }}
+            </div>
+          }
+        </div>
+
+        <input 
+          type="file" 
+          id="profileImage" 
+          (change)="onFileSelected($event)" 
+          accept="image/jpeg,image/png,image/gif,image/webp,image/jpg"
+          class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-colors cursor-pointer disabled:opacity-50"
+          [disabled]="isSubmitting()" />
+        <p class="mt-2 text-xs text-slate-400">Accepted formats: JPEG, PNG, GIF, WebP (Max: 10MB)</p>
+      </div>
+
+      <!-- Email Field Area -->
+      <div class="flex flex-col space-y-1.5">
+        <label for="email" class="text-sm font-semibold text-slate-700">Email Address</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          placeholder="example@domain.com"
+          class="w-full px-3 py-2 bg-white border rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 transition-all disabled:bg-slate-50 disabled:text-slate-400"
+          [class.border-red-300]="profileForm.get('email')?.touched && profileForm.get('email')?.invalid"
+          [class.focus:border-red-500]="profileForm.get('email')?.touched && profileForm.get('email')?.invalid"
+          [class.focus:ring-red-100]="profileForm.get('email')?.touched && profileForm.get('email')?.invalid"
+          [class.border-slate-200]="!(profileForm.get('email')?.touched && profileForm.get('email')?.invalid)"
+          [class.focus:border-indigo-500]="!(profileForm.get('email')?.touched && profileForm.get('email')?.invalid)"
+          [class.focus:ring-indigo-100]="!(profileForm.get('email')?.touched && profileForm.get('email')?.invalid)"
+          [disabled]="isSubmitting()" />
+        
+        @if (profileForm.get('email')?.touched && profileForm.get('email')?.errors?.['required']) {
+          <p class="text-xs font-medium text-red-600 mt-1">Email address is required.</p>
+        }
+        @if (profileForm.get('email')?.touched && profileForm.get('email')?.errors?.['email']) {
+          <p class="text-xs font-medium text-red-600 mt-1">Please provide a valid email format.</p>
+        }
+      </div>
+
+      <!-- Form Execution Actions Row -->
+      <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+        <button 
+          type="submit" 
+          class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white shadow-sm bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-100 active:bg-indigo-800 disabled:opacity-50 disabled:pointer-events-none transition-all flex items-center justify-center min-w-[120px]"
+          [disabled]="profileForm.invalid || isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="inline-flex items-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Processing...
+            </span>
+          } @else {
+            <span>{{ isEditMode() ? 'Save Changes' : 'Create Profile' }}</span>
+          }
+        </button>
+
+        <!-- Contextual Delete Action Button -->
+        @if (isEditMode()) {
+          <button 
+            type="button" 
+            class="px-4 py-2.5 rounded-lg text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-50 disabled:opacity-50 transition-colors"
+            (click)="deleteProfile()" 
+            [disabled]="isSubmitting()">
+            Delete Profile
+          </button>
+        }
+      </div>
+
+    </form>
+  }
+</div>
+</div>

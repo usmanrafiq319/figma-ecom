@@ -1,0 +1,16 @@
+@if (!isBannerHidden()) {
+<!-- Top Promo Banner -->
+<div  class="relative bg-black global-px py-2 text-center text-xs font-light text-white sm:text-sm">
+  <p>
+    Sign up and get 20% off to your first order.
+    <a href="#" class="font-medium underline hover:text-gray-300">Sign Up Now</a>
+  </p>
+  
+  <!-- Close Button -->
+  <button (click)= "isBannerHidden.set(true)"  class="absolute top-1/2 right-4 -translate-y-1/2 text-white hover:text-gray-300" aria-label="Close banner">
+    <svg xmlns="http://w3.org" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-4 w-4">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+</div>
+}

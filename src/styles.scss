@@ -1,1 +1,24 @@
-/* You can add global styles to this file, and also import other style files */
+/* 1. INITIALIZE TAILWIND v4 USING PLAIN CSS TARGETING */
+@import "tailwindcss/index.css";
+
+/* 2. DEFINE YOUR GLOBAL THEME (v4 CONFIGURATION) */
+@theme {
+  --color-global-dark: #000000;    /* For top banner, text, headers */
+  --color-global-light: #F0F0F0;   /* For the capsule search bar background */
+  --color-global-grey: #707070;   /* For secondary text/links */
+  --color-global-red: #FF3333;  /* For special price tags/badges */
+  --color-global-white: #FFF;
+}
+
+/* 3. BUNDLE REUSABLE SITE COMPONENTS */
+.nav-link {
+  @apply font-normal text-sm transition-colors duration-200 text-black hover:text-black;
+}
+
+.btn-primary {
+  @apply text-white font-medium px-6 py-3 rounded-full transition-colors duration-200 text-sm bg-white hover:bg-black;
+}
+
+.global-px{
+  @apply px-4 md:px-8 lg:px-16; 
+}

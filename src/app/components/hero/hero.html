@@ -1,0 +1,68 @@
+<!-- Parent Container -->
+<div class="relative w-full lg:min-h-[450px] bg-[#F2F0F1] flex flex-col lg:flex-row lg:items-center overflow-hidden global-px">
+  
+  <!-- DESKTOP IMAGE: Unchanged -->
+  <img 
+    src="logos/hero-image.png" 
+    alt="Find Clothes That Matches Your Style" 
+    class="hidden lg:block absolute right-0 bottom-0 h-[85%] max-h-[400px] w-auto object-contain object-right-bottom z-0"
+  />
+
+  <!-- Main Content Layer -->
+  <div class="relative z-10 w-full grid grid-cols-1 lg:grid-cols-2 py-8 lg:py-12">
+    
+    <!-- Left Column -->
+    <div class="flex flex-col justify-center max-w-xl mx-auto lg:mx-0">
+      
+      <!-- Headline -->
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-black leading-tight mb-3 text-center lg:text-left">
+        Find clothes that matches your style
+      </h1>
+      
+      <!-- Subtitle Paragraph -->
+      <p class="text-xs sm:text-sm text-black/60 font-normal mb-6 max-w-md leading-relaxed text-center lg:text-left mx-auto lg:mx-0">
+        Browse through our diverse range of meticulously crafted garments, designed to bring out your individuality and cater to your sense of style.
+      </p>
+      
+      <!-- Call to Action Button -->
+      <div class="mb-8 flex justify-center lg:justify-start">
+        <button class="w-full sm:w-auto bg-black text-white text-sm font-medium px-12 py-3 rounded-full hover:bg-black/80 transition-colors duration-200">
+          Shop Now
+        </button>
+      </div>
+      
+      <!-- Statistics Row -->
+      <div class="flex flex-wrap items-center justify-center lg:justify-start gap-6 sm:gap-10 text-center sm:text-left mb-8 lg:mb-0">
+        <div class="border-b sm:border-b-0 sm:border-r border-black/10 pb-4 sm:pb-0 sm:pr-10 last:border-none">
+            <span class="block text-2xl sm:text-3xl font-bold text-black mb-0.5">200+</span>
+            <span class="block text-[11px] sm:text-xs text-black/60">International Brands</span>
+        </div>
+
+        <div class="border-b sm:border-b-0 sm:border-r border-black/10 pb-4 sm:pb-0 sm:pr-10 last:border-none">
+            <span class="block text-2xl sm:text-3xl font-bold text-black mb-0.5">2,000+</span>
+            <span class="block text-[11px] sm:text-xs text-black/60">High-Quality Products</span>
+        </div>
+
+        <div class="last:border-none">
+            <span class="block text-2xl sm:text-3xl font-bold text-black mb-0.5">30,000+</span>
+            <span class="block text-[11px] sm:text-xs text-black/60">Happy Customers</span>
+        </div>
+      </div>
+
+      <!-- NEW MOBILE IMAGE: Using negative margins to break out of global-px padding -->
+      <div class="block lg:hidden w-[calc(100%+2rem)] -mx-4 pt-4">
+        <img 
+          src="logos/hero-image-2.png" 
+          alt="Featured Collection Styles" 
+          class="w-full h-auto max-h-[360px] lg:max-h-[300] object-cover"
+        />
+      </div>
+
+    </div>
+
+    <!-- Right Column -->
+    <div class="hidden lg:block"></div>
+
+  </div>
+
+</div>

@@ -1,0 +1,19 @@
+<div class="flex flex-col w-full items-center bg-global-white py-10 global-px  gap-8">
+    <h2 class="text-3xl font-black lg:text-4xl text-global-black pb-2">NEW ARRIVALS</h2>
+    <div class="grid grid-cols-2 lg:grid-cols-4 w-full gap-4">
+
+        @for (product of products(); track product.id) {
+           <a [routerLink]="['/product', product.id]">
+                <div class="flex flex-col items-center gap-3">
+                    <img src="{{product.url}}" class="bg-global-light aspect-square rounded-2xl size-auto" alt="">
+                    <div class="flex flex-col  w-full  gap-1 items-start">
+                        <h3 class="text-base py-0.5 font-bold">{{product.title}}</h3>
+                        <span class="text-xl text-global-grey">{{product.price}}$</span>
+                    </div>
+                </div>
+            </a>
+        } 
+
+    </div>
+    <button class="py-1 px-8 border border-global-light rounded-full hover:border-global-dark ">View All</button>
+</div>

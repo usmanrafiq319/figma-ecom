@@ -1,0 +1,35 @@
+<!-- 1. Call isLoading as a function () -->
+@if (isLoading()) {
+<div class="loading-spinner">
+    <p>Loading product details...</p>
+</div>
+}
+
+<!-- 2. Call errorMessage as a function () -->
+@if (errorMessage()) {
+<div class="error-message">
+    <p>{{ errorMessage() }}</p>
+</div>
+}
+
+<!-- 3. Show data when loading is done and product exists -->
+@if (!isLoading() && product()) {
+<div class="flex flex-col md:flex-row gap-4 items-center lg:justify-start justify-center global-px">
+    <div class="flex items-center justify-center p-6">
+        <img [src]="product()?.url" alt="" class="h-auto md:w-2xl w-2xs p-4 bg-global-light rounded-2xl">
+    </div>
+    <div class="flex flex-col items-start justify-start gap-4 p-6">
+        <h1 class="text-4xl font-extrabold">{{ product()?.title }}</h1>
+        <p class="font-medium text-2xl ">Price: ${{ product()?.price }}</p>
+        <p class="description">{{ product()?.description }}</p>
+
+        <div class="flex flex-row w-full  items-center justify-between gap-4">
+                    <app-quantity [amount]="amount()" [id]="id()" (cartUpdated)="this.getQuantity();"   class="w-full md:w-24"  />
+            <div class="flex flex-row items-center justify-center mx-auto w-1/2 h-12 rounded-full bg-global-dark py-2 px-4 cursor-pointer" >
+                <span class="text-global-white font-bold" (click)="cartText()" >{{text()}}</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+}
