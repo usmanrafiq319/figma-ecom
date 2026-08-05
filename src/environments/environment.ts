@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://localhost:7011'  // Your .NET backend URL
+  apiUrl: 'https://dotnet-test1-authentication.onrender.com'  // Your .NET backend URL
 };
