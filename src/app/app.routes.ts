@@ -51,5 +51,10 @@ export const routes: Routes = [{
         path: "admin-conversation",
         canActivate: [authGuard],
         loadComponent: () => import("./admin-conversations/admin-conversations").then(m=>m.AdminConversations)
-    },     
+    },   
+    {
+        path: "admin-products",
+        canActivate: [authGuard],
+        loadComponent: () => import("./admin-products/admin-products").then(m=>m.AdminProducts)
+    },   
 ];

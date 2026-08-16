@@ -5,92 +5,52 @@ import {
   OnDestroy,
   OnInit
 } from '@angular/core';
-
 import { RouterLink } from '@angular/router';
-
-import {
-  Subscription
-} from 'rxjs';
-
-import {
-  ChatSignalrService
-} from '../services/chat-signalr-service';
-
-import {
-  ChatApiService
-} from '../services/chat-api-service';
+import { Subscription } from 'rxjs';
+import { ChatSignalrService } from '../services/chat-signalr-service';
+import { ChatApiService } from '../services/chat-api-service';
 import { ChatConnectionStatus } from '../models/chat.models';
+import { ProductService } from '../services/product-service';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [
-    RouterLink
-  ],
+  imports: [RouterLink],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss',
-  changeDetection:
-    ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AdminDashboard
-  implements OnInit, OnDestroy {
-
+export class AdminDashboard implements OnInit, OnDestroy {
   unreadMessages = 0;
-
   unreadConversations = 0;
-
   loading = true;
-
   summaryError = false;
 
-  connectionStatus:
-    ChatConnectionStatus =
-      'disconnected';
+  // Product Section State
+  totalProducts = 0;
+  productsLoading = true;
+  productsError = false;
 
-  private readonly subscriptions =
-    new Subscription();
+  connectionStatus: ChatConnectionStatus = 'disconnected';
+  private readonly subscriptions = new Subscription();
 
   constructor(
-    private readonly chatApi:
-      ChatApiService,
-
-    private readonly chatSignalr:
-      ChatSignalrService,
-
-    private readonly changeDetector:
-      ChangeDetectorRef
+    private readonly chatApi: ChatApiService,
+    private readonly chatSignalr: ChatSignalrService,
+    private readonly productService: ProductService,
+    private readonly changeDetector: ChangeDetectorRef
   ) {}
 
   async ngOnInit(): Promise<void> {
-    /*
-     * Subscribe before starting SignalR so that
-     * early events are not missed.
-     */
     this.subscribeToChatEvents();
-
-    /*
-     * Load the initial notification summary
-     * using the REST API.
-     */
     this.loadSummary();
+    this.loadProductsSummary();
 
     try {
-      await this.chatSignalr
-        .startConnection();
-
-      console.log(
-        '[Admin dashboard] SignalR connected'
-      );
+      await this.chatSignalr.startConnection();
+      console.log('[Admin dashboard] SignalR connected');
     } catch (error) {
-      console.error(
-        '[Admin dashboard] Could not connect to chat:',
-        error
-      );
-
-      /*
-       * The connectionStatus$ subscription will
-       * automatically update the UI to offline.
-       */
+      console.error('[Admin dashboard] Could not connect to chat:', error);
     }
   }
 
@@ -98,41 +58,45 @@ export class AdminDashboard
     this.loading = true;
     this.summaryError = false;
 
-    const summarySubscription =
-      this.chatApi
-        .getAdminSummary()
-        .subscribe({
-          next: summary => {
-            this.unreadMessages =
-              summary.unreadMessages;
+    const summarySubscription = this.chatApi.getAdminSummary().subscribe({
+      next: summary => {
+        this.unreadMessages = summary.unreadMessages;
+        this.unreadConversations = summary.unreadConversations;
+        this.loading = false;
+        this.summaryError = false;
+        this.changeDetector.markForCheck();
+      },
+      error: error => {
+        this.loading = false;
+        this.summaryError = true;
+        console.error('[Admin dashboard] Could not load chat summary:', error);
+        this.changeDetector.markForCheck();
+      }
+    });
 
-            this.unreadConversations =
-              summary.unreadConversations;
+    this.subscriptions.add(summarySubscription);
+  }
 
-            this.loading = false;
-            this.summaryError = false;
+  loadProductsSummary(): void {
+    this.productsLoading = true;
+    this.productsError = false;
 
-            this.changeDetector
-              .markForCheck();
-          },
+    const productsSub = this.productService.getProducts().subscribe({
+      next: products => {
+        this.totalProducts = products.length;
+        this.productsLoading = false;
+        this.productsError = false;
+        this.changeDetector.markForCheck();
+      },
+      error: error => {
+        this.productsLoading = false;
+        this.productsError = true;
+        console.error('[Admin dashboard] Could not load products:', error);
+        this.changeDetector.markForCheck();
+      }
+    });
 
-          error: error => {
-            this.loading = false;
-            this.summaryError = true;
-
-            console.error(
-              '[Admin dashboard] Could not load chat summary:',
-              error
-            );
-
-            this.changeDetector
-              .markForCheck();
-          }
-        });
-
-    this.subscriptions.add(
-      summarySubscription
-    );
+    this.subscriptions.add(productsSub);
   }
 
   retryConnection(): void {
@@ -143,19 +107,18 @@ export class AdminDashboard
     this.loadSummary();
   }
 
+  retryProducts(): void {
+    this.loadProductsSummary();
+  }
+
   get isConnected(): boolean {
-    return (
-      this.connectionStatus ===
-      'connected'
-    );
+    return this.connectionStatus === 'connected';
   }
 
   get isConnecting(): boolean {
     return (
-      this.connectionStatus ===
-        'connecting' ||
-      this.connectionStatus ===
-        'reconnecting'
+      this.connectionStatus === 'connecting' ||
+      this.connectionStatus === 'reconnecting'
     );
   }
 
@@ -163,86 +126,40 @@ export class AdminDashboard
     switch (this.connectionStatus) {
       case 'connected':
         return 'Live';
-
       case 'connecting':
         return 'Connecting';
-
       case 'reconnecting':
         return 'Reconnecting';
-
       default:
         return 'Offline';
     }
   }
 
-  private subscribeToChatEvents():
-    void {
-
-    /*
-     * Listen for unread-count and conversation
-     * changes coming from the backend.
-     */
+  private subscribeToChatEvents(): void {
     this.subscriptions.add(
-      this.chatSignalr
-        .conversationUpdated$
-        .subscribe(update => {
-          console.log(
-            '[Admin dashboard] ConversationUpdated:',
-            update
-          );
-
-          /*
-           * A conversation update may affect both:
-           *
-           * - total unread messages
-           * - total unread conversations
-           *
-           * Therefore reload the complete summary.
-           */
-          this.loadSummary();
-        })
+      this.chatSignalr.conversationUpdated$.subscribe(update => {
+        console.log('[Admin dashboard] ConversationUpdated:', update);
+        this.loadSummary();
+      })
     );
 
-    /*
-     * Keep the connection badge updated during:
-     *
-     * - initial connection
-     * - automatic reconnection
-     * - disconnection
-     */
     this.subscriptions.add(
-      this.chatSignalr
-        .connectionStatus$
-        .subscribe(status => {
-          this.connectionStatus =
-            status;
-
-          this.changeDetector
-            .markForCheck();
-        })
+      this.chatSignalr.connectionStatus$.subscribe(status => {
+        this.connectionStatus = status;
+        this.changeDetector.markForCheck();
+      })
     );
   }
 
-  private async connectSignalr():
-    Promise<void> {
+  private async connectSignalr(): Promise<void> {
     try {
-      await this.chatSignalr
-        .startConnection();
+      await this.chatSignalr.startConnection();
     } catch (error) {
-      console.error(
-        '[Admin dashboard] SignalR retry failed:',
-        error
-      );
+      console.error('[Admin dashboard] SignalR retry failed:', error);
     }
   }
 
   ngOnDestroy(): void {
-    /*
-     * Remove only this component's subscriptions.
-     *
-     * Do not stop SignalR because the service
-     * connection is shared across the application.
-     */
     this.subscriptions.unsubscribe();
   }
 }
