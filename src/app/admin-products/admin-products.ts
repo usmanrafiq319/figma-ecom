@@ -1,45 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit
-} from '@angular/core';
+import {ChangeDetectionStrategy,ChangeDetectorRef,Component,OnDestroy,OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ProductService } from '../services/product-service';
-
-export interface ProductModel {
-  id: string;
-  title: string;
-  price: number;
-  description: string;
-  url: string;
-  quantity?: number;
-}
-
-export interface CreateProductDto {
-  title: string;
-  price: number;
-  quantity: number;
-  description?: string;
-  image?: File | null;
-}
-
-export function toProductFormData(dto: CreateProductDto): FormData {
-  const formData = new FormData();
-  formData.append('title', dto.title);
-  formData.append('price', dto.price.toString());
-  formData.append('quantity', dto.quantity.toString());
-  formData.append('description', dto.description || '');
-
-  if (dto.image) {
-    formData.append('image', dto.image, dto.image.name);
-  }
-
-  return formData;
-}
+import { CreateProductDto, toProductFormData } from '../models/create-product-dto-module';
+import { ProductModel } from '../models/product-model';
 
 @Component({
   selector: 'app-admin-products',
@@ -151,7 +116,8 @@ export class AdminProducts implements OnInit, OnDestroy {
       price: product.price,
       quantity: product.quantity ?? 0,
       description: product.description ?? '',
-      image: null
+      image: null,
+      category:product.category
     };
     this.clearFileSelection();
     this.imagePreviewUrl = product.url || null;
@@ -239,7 +205,8 @@ export class AdminProducts implements OnInit, OnDestroy {
       price: 0,
       quantity: 0,
       description: '',
-      image: null
+      image: null,
+      category:''
     };
   }
 

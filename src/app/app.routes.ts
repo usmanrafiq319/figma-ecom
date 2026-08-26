@@ -16,6 +16,12 @@ export const routes: Routes = [{
         }
     },
     {
+        path:"register",
+        loadComponent:()=>{
+            return import("./register-user/register-user").then(m=>m.RegisterUser)
+        }
+    },
+    {
         path:"product/:id",
         canActivate:[authGuard],
         loadComponent:()=>{
@@ -56,5 +62,10 @@ export const routes: Routes = [{
         path: "admin-products",
         canActivate: [authGuard],
         loadComponent: () => import("./admin-products/admin-products").then(m=>m.AdminProducts)
+    },   
+        {
+        path: "products-category",
+        canActivate: [authGuard],
+        loadComponent: () => import("./product-category/product-category").then(m=>m.ProductCategory)
     },   
 ];

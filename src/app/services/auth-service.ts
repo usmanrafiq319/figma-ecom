@@ -9,6 +9,7 @@ import { ForgotPasswordRequest } from '../models/forgot-password-request';
 import { VerifyOtpRequest } from '../models/verify-otp-request';
 import { ResetPasswordRequest } from '../models/reset-password-request';
 import { environment } from '../../environments/environment';
+import { RegisterUserModel } from '../models/register-user-model';
 
 @Injectable({
   providedIn: 'root',
@@ -35,8 +36,25 @@ export class AuthService {
   }
 
   // New method: Login and handle navigation
-  login(authUseruser: AuthUserModel): Observable<Token> {
-    return this.authUser(authUseruser).pipe(
+  login(authUser: AuthUserModel): Observable<Token> {
+    return this.authUser(authUser).pipe(
+      tap((response: Token) => {
+        if (response.accessToken) {
+          this.saveToken(response.accessToken);
+          this.navigateAfterLogin();
+        }
+      }),
+      catchError(err => this.handleError(err))
+    );
+  }
+
+  authRegister(registerUser:RegisterUserModel): Observable<Token>{
+    return this.http.post<Token>(`${this.baseUrl}/register`, registerUser, { withCredentials: true });
+  }
+
+    // New method: Login and handle navigation
+  register(authUser: RegisterUserModel): Observable<Token> {
+    return this.authRegister(authUser).pipe(
       tap((response: Token) => {
         if (response.accessToken) {
           this.saveToken(response.accessToken);

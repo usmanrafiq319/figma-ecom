@@ -19,8 +19,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const token = localStorage.getItem('token');
 
-  // Don't attach token to refresh request
-  if (!req.url.includes('/access-token') && token) {
+  // Don't attach access token to refresh request
+  if (
+    !req.url.includes('/access-token') &&
+    token
+  ) {
 
     req = req.clone({
       setHeaders: {
@@ -34,7 +37,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
     catchError((error: HttpErrorResponse) => {
 
-      // Only handle expired access token
+      // Access token expired
       if (
         error.status === 401 &&
         !req.url.includes('/access-token')
@@ -44,14 +47,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
           switchMap((newAccessToken) => {
 
-            auth.saveToken(newAccessToken);
-
             const clonedRequest = req.clone({
-
               setHeaders: {
                 Authorization: `Bearer ${newAccessToken}`
               }
-
             });
 
             return next(clonedRequest);

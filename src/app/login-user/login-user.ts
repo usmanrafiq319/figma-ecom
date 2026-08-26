@@ -2,12 +2,12 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth-service';
 import { AuthUserModel } from '../models/auth-user-model';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login-user',
-  imports: [FormsModule],
+  imports: [FormsModule,RouterLink],
   templateUrl: './login-user.html',
   styleUrl: './login-user.scss',
 })
