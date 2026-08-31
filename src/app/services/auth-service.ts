@@ -94,15 +94,42 @@ export class AuthService {
     });
   }
 
+  // refreshToken() {
+  //   return this.http.post<string>(`${this.baseUrl}/access-token`, {}, { withCredentials: true })
+  //     .pipe(
+  //       tap(newToken => {
+  //         if (newToken) this.saveToken(newToken);
+  //       }),
+  //       catchError(err => this.handleError(err))
+  //     );
+  // }
+
   refreshToken() {
-    return this.http.post<string>(`${this.baseUrl}/access-token`, {}, { withCredentials: true })
-      .pipe(
-        tap(newToken => {
-          if (newToken) this.saveToken(newToken);
-        }),
-        catchError(err => this.handleError(err))
-      );
-  }
+  console.log('[AUTH] Refresh request started');
+
+  return this.http.post<string>(
+    `${this.baseUrl}/access-token`,
+    {},
+    { withCredentials: true }
+  ).pipe(
+    tap(newToken => {
+
+      console.log('[AUTH] Refresh response:', newToken);
+      console.log('[AUTH] Token before save:', localStorage.getItem('token'));
+
+      if (newToken) {
+        this.saveToken(newToken);
+      }
+
+      console.log('[AUTH] Token after save:', localStorage.getItem('token'));
+      console.log('[AUTH] isloggedin:', this.isloggedin());
+    }),
+    catchError(err => {
+      console.error('[AUTH] Refresh FAILED:', err);
+      return this.handleError(err);
+    })
+  );
+}
 
   clearLocalSession() {
     localStorage.removeItem("token");
