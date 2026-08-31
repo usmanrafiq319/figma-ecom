@@ -3,10 +3,11 @@ import { AuthService } from '../services/auth-service';
 import { FormsModule } from '@angular/forms';
 import { RegisterUserModel } from '../models/register-user-model';
 import { HttpErrorResponse } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-register-user',
-  imports: [FormsModule],
+  imports: [FormsModule,RouterLink],
   templateUrl: './register-user.html',
   styleUrl: './register-user.scss',
 })
