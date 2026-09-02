@@ -1,35 +1,147 @@
-<!-- 1. Call isLoading as a function () -->
 @if (isLoading()) {
-<div class="loading-spinner">
-    <p>Loading product details...</p>
+<div class="flex justify-center items-center py-20">
+  <p class="text-lg text-gray-500 animate-pulse">Loading product details...</p>
 </div>
 }
 
-<!-- 2. Call errorMessage as a function () -->
 @if (errorMessage()) {
-<div class="error-message">
-    <p>{{ errorMessage() }}</p>
+<div class="max-w-4xl mx-auto my-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+  <p>{{ errorMessage() }}</p>
 </div>
 }
 
-<!-- 3. Show data when loading is done and product exists -->
 @if (!isLoading() && product()) {
-<div class="flex flex-col md:flex-row gap-4 items-center lg:justify-start justify-center global-px">
-    <div class="flex items-center justify-center p-6">
-        <img [src]="product()?.url" alt="" class="h-auto md:w-2xl w-2xs p-4 bg-global-light rounded-2xl">
-    </div>
-    <div class="flex flex-col items-start justify-start gap-4 p-6">
-        <h1 class="text-4xl font-extrabold">{{ product()?.title }}</h1>
-        <p class="font-medium text-2xl ">Price: ${{ product()?.price }}</p>
-        <p class="description">{{ product()?.description }}</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  
+  <!-- Breadcrumb Navigation -->
+  <nav class="text-sm font-medium text-gray-500 mb-6">
+    <a routerLink="/" class="hover:text-black">Home</a>
+    <span class="mx-2">/</span>
+    <span class="capitalize text-gray-700">{{ product()?.category }}</span>
+    <span class="mx-2">/</span>
+    <span class="text-black font-semibold">{{ product()?.title }}</span>
+  </nav>
 
-        <div class="flex flex-row w-full  items-center justify-between gap-4">
-                    <app-quantity [amount]="amount()" [id]="id()" (cartUpdated)="this.getQuantity();"   class="w-full md:w-24"  />
-            <div class="flex flex-row items-center justify-center mx-auto w-1/2 h-12 rounded-full bg-global-dark py-2 px-4 cursor-pointer" >
-                <span class="text-global-white font-bold" (click)="cartText()" >{{text()}}</span>
-            </div>
+  <!-- Product Hero Section -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+    
+    <!-- Gallery Section -->
+    <div class="flex flex-col gap-4">
+      <div class="w-full bg-global-light rounded-2xl p-6 flex justify-center items-center border border-gray-100 shadow-sm overflow-hidden">
+        <img [src]="selectedImage()" [alt]="product()?.title" class="max-h-112 w-auto object-contain transition-all duration-300 transform hover:scale-105" />
+      </div>
+      
+      <!-- Thumbnail Selector -->
+      <div class="flex gap-3 overflow-x-auto pb-2">
+        @for (img of productImages(); track $index) {
+          <button 
+            (click)="selectImage(img)" 
+            [class.border-black]="selectedImage() === img"
+            class="w-20 h-20 rounded-xl border-2 border-transparent bg-global-light p-2 transition-all hover:border-gray-400 shrink-0">
+            <img [src]="img" class="w-full h-full object-contain" />
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Product Info Section -->
+    <div class="flex flex-col gap-5">
+      <span class="text-xs uppercase tracking-wider px-3 py-1 bg-gray-200 text-gray-800 rounded-full w-fit font-bold">
+        {{ product()?.category }}
+      </span>
+
+      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+        {{ product()?.title }}
+      </h1>
+
+      <!-- Rating Summary Header -->
+      <div class="flex items-center gap-3">
+        <div class="flex text-yellow-400">
+          <span class="text-lg">★</span>
+          <span class="ml-1 text-sm font-bold text-gray-800">{{ averageRating() }}</span>
         </div>
+        <span class="text-gray-400">•</span>
+        <button (click)="setTab('reviews')" class="text-sm text-gray-600 underline hover:text-black">
+          {{ reviews().length }} customer reviews
+        </button>
+      </div>
 
+      <!-- Price & Stock Status -->
+      <div class="flex items-baseline gap-4 border-y border-gray-200 py-4">
+        <p class="text-3xl font-extrabold text-black">${{ product()?.price }}</p>
+        <span class="text-xs font-semibold text-green-700 bg-green-100 px-2.5 py-1 rounded-full">
+          In Stock
+        </span>
+      </div>
+
+      <p class="text-gray-600 leading-relaxed text-base">
+        {{ product()?.description }}
+      </p>
+
+      <!-- Cart Actions -->
+      <div class="flex flex-col sm:flex-row items-center gap-4 pt-4">
+        <app-quantity [amount]="amount()" [id]="id()" (cartUpdated)="getQuantity()" class="w-full sm:w-auto" />
+
+        <button 
+          (click)="cartText()" 
+          class="w-full sm:w-1/2 h-12 rounded-full bg-global-dark text-global-white font-bold transition-all hover:opacity-90 active:scale-95 shadow-md flex items-center justify-center">
+          {{ text() }}
+        </button>
+      </div>
+
+      <!-- Metadata Badges -->
+      <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-100 text-xs text-gray-500">
+        <div><strong class="text-gray-700">Added on:</strong> {{ product()?.createdAt | date:'mediumDate' }}</div>
+        <div><strong class="text-gray-700">Guaranteed:</strong> 30-Day Money Back</div>
+      </div>
     </div>
+  </div>
+
+  <!-- Detailed Tabs (Description, Reviews, Shipping) -->
+  <div class="mt-16">
+    <div class="flex border-b border-gray-200 gap-8">
+      <button 
+        (click)="setTab('description')" 
+        [class.border-black]="activeTab() === 'description'"
+        [class.text-black]="activeTab() === 'description'"
+        class="pb-4 font-bold text-gray-500 border-b-2 border-transparent hover:text-black">
+        Description
+      </button>
+      <button 
+        (click)="setTab('reviews')" 
+        [class.border-black]="activeTab() === 'reviews'"
+        [class.text-black]="activeTab() === 'reviews'"
+        class="pb-4 font-bold text-gray-500 border-b-2 border-transparent hover:text-black">
+        Reviews ({{ reviews().length }})
+      </button>
+    </div>
+
+    <div class="py-6">
+      @if (activeTab() === 'description') {
+        <div class="prose max-w-none text-gray-700 leading-relaxed">
+          <p>{{ product()?.description }}</p>
+        </div>
+      }
+
+      @if (activeTab() === 'reviews') {
+        <div class="flex flex-col gap-6 max-w-3xl">
+          @for (review of reviews(); track review.id) {
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-bold text-gray-900">{{ review.author }}</span>
+                <span class="text-xs text-gray-400">{{ review.date | date:'mediumDate' }}</span>
+              </div>
+              <div class="text-yellow-400 text-sm mb-2">
+                {{ '★'.repeat(review.rating) }}
+              </div>
+              <p class="text-gray-600 text-sm">{{ review.comment }}</p>
+            </div>
+          } @empty {
+            <p class="text-gray-500">No reviews yet for this product.</p>
+          }
+        </div>
+      }
+    </div>
+  </div>
 </div>
 }

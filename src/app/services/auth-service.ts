@@ -102,7 +102,7 @@ refreshToken(): Observable<string> {
     {},
     {
       withCredentials: true,
-      responseType: 'text' as 'json'   // 👈 Forces plain text parsing
+      responseType: 'text' as 'json'   
     }
   ).pipe(
     tap(newToken => {
