@@ -42,25 +42,26 @@
 
       <ul class="py-4 border-b border-gray-200 space-y-3">
 
-        <li
-          *ngFor="let category of categories"
-          (click)="selectCategory(category)"
-          class="flex justify-between items-center cursor-pointer text-sm transition"
-          [class.text-black]="selectedCategory === category"
-          [class.font-bold]="selectedCategory === category"
-          [class.text-gray-600]="selectedCategory !== category"
-          [class.hover:text-black]="selectedCategory !== category"
-        >
+        @for (category of categories; track category) {
+          <li
+            (click)="selectCategory(category)"
+            class="flex justify-between items-center cursor-pointer text-sm transition"
+            [class.text-black]="selectedCategory === category"
+            [class.font-bold]="selectedCategory === category"
+            [class.text-gray-600]="selectedCategory !== category"
+            [class.hover:text-black]="selectedCategory !== category"
+          >
 
-          <span>
-            {{ category }}
-          </span>
+            <span>
+              {{ category }}
+            </span>
 
-          <span>
-            &#8250;
-          </span>
+            <span>
+              &#8250;
+            </span>
 
-        </li>
+          </li>
+        }
 
       </ul>
 
@@ -129,38 +130,40 @@
 
         <div class="grid grid-cols-5 gap-2.5">
 
-          <button
-            *ngFor="let color of colors"
-            type="button"
-            class="w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-95"
-            [style.backgroundColor]="color"
-            [class.border]="color === '#FFFFFF'"
-            [class.border-gray-300]="color === '#FFFFFF'"
-            [class.ring-2]="selectedColor === color"
-            [class.ring-black]="selectedColor === color"
-            (click)="selectColor(color)"
-          >
-
-            <svg
-              *ngIf="selectedColor === color"
-              class="w-4 h-4"
-              [class.text-white]="color !== '#FFFFFF'"
-              [class.text-black]="color === '#FFFFFF'"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          @for (color of colors; track color) {
+            <button
+              type="button"
+              class="w-9 h-9 rounded-full flex items-center justify-center transition-transform active:scale-95"
+              [style.backgroundColor]="color"
+              [class.border]="color === '#FFFFFF'"
+              [class.border-gray-300]="color === '#FFFFFF'"
+              [class.ring-2]="selectedColor === color"
+              [class.ring-black]="selectedColor === color"
+              (click)="selectColor(color)"
             >
 
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="3"
-                d="M5 13l4 4L19 7"
-              />
+              @if (selectedColor === color) {
+                <svg
+                  class="w-4 h-4"
+                  [class.text-white]="color !== '#FFFFFF'"
+                  [class.text-black]="color === '#FFFFFF'"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
 
-            </svg>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M5 13l4 4L19 7"
+                  />
 
-          </button>
+                </svg>
+              }
+
+            </button>
+          }
 
         </div>
 
@@ -187,20 +190,21 @@
 
         <div class="flex flex-wrap gap-2">
 
-          <button
-            *ngFor="let size of sizes"
-            type="button"
-            class="px-4 py-2 text-xs rounded-full transition-colors"
-            [class.bg-black]="selectedSize === size"
-            [class.text-white]="selectedSize === size"
-            [class.bg-gray-100]="selectedSize !== size"
-            [class.text-gray-600]="selectedSize !== size"
-            (click)="selectSize(size)"
-          >
+          @for (size of sizes; track size) {
+            <button
+              type="button"
+              class="px-4 py-2 text-xs rounded-full transition-colors"
+              [class.bg-black]="selectedSize === size"
+              [class.text-white]="selectedSize === size"
+              [class.bg-gray-100]="selectedSize !== size"
+              [class.text-gray-600]="selectedSize !== size"
+              (click)="selectSize(size)"
+            >
 
-            {{ size }}
+              {{ size }}
 
-          </button>
+            </button>
+          }
 
         </div>
 
@@ -227,20 +231,21 @@
 
         <ul class="space-y-3">
 
-          <li
-            *ngFor="let style of dressStyles"
-            class="flex justify-between items-center text-gray-600 hover:text-black cursor-pointer text-sm"
-          >
+          @for (style of dressStyles; track style) {
+            <li
+              class="flex justify-between items-center text-gray-600 hover:text-black cursor-pointer text-sm"
+            >
 
-            <span>
-              {{ style }}
-            </span>
+              <span>
+                {{ style }}
+              </span>
 
-            <span>
-              &#8250;
-            </span>
+              <span>
+                &#8250;
+              </span>
 
-          </li>
+            </li>
+          }
 
         </ul>
 
@@ -321,188 +326,196 @@
 
 
       <!-- ========================= -->
-      <!-- NO PRODUCTS -->
+      <!-- PRODUCT GRID / NO PRODUCTS -->
       <!-- ========================= -->
 
-      <div
-        *ngIf="filteredProducts.length === 0"
-        class="border border-gray-200 rounded-3xl p-12 text-center"
-      >
+      @if (filteredProducts.length === 0) {
 
-        <h3 class="text-xl font-bold mb-2">
-          No products found
-        </h3>
-
-        <p class="text-gray-500 mb-5">
-          Try changing your category or price filter.
-        </p>
-
-        <button
-          (click)="clearFilters()"
-          class="bg-black text-white px-6 py-3 rounded-full"
+        <div
+          class="border border-gray-200 rounded-3xl p-12 text-center"
         >
-          Clear Filters
-        </button>
 
-      </div>
+          <h3 class="text-xl font-bold mb-2">
+            No products found
+          </h3>
 
+          <p class="text-gray-500 mb-5">
+            Try changing your category or price filter.
+          </p>
 
-<!-- ========================= -->
-<!-- PRODUCT GRID -->
-<!-- ========================= -->
+          <button
+            (click)="clearFilters()"
+            class="bg-black text-white px-6 py-3 rounded-full"
+          >
+            Clear Filters
+          </button>
 
-<div
-  *ngIf="filteredProducts.length > 0"
-  class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
->
+        </div>
 
-  <div
-    *ngFor="
-      let product of paginatedProducts;
-      trackBy: trackByProductId
-    "
-    [routerLink]="['/product', product.id]"
-    class="flex flex-col group cursor-pointer"
-  >
+      } @else {
 
-    <!-- IMAGE -->
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+        >
 
-    <div
-      class="bg-[#F0EEED] rounded-2xl h-72 flex items-center justify-center p-4 mb-3 overflow-hidden"
-    >
+          @for (product of paginatedProducts; track product.id) {
 
-      <img
-        [src]="product.url"
-        [alt]="product.title"
-        class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
-      />
+            <div
+              [routerLink]="['/product', product.id]"
+              class="flex flex-col group cursor-pointer"
+            >
 
-    </div>
+              <!-- IMAGE -->
 
+              <div
+                class="bg-[#F0EEED] rounded-2xl h-72 flex items-center justify-center p-4 mb-3 overflow-hidden"
+              >
 
-    <!-- TITLE -->
+                <img
+                  [src]="product.url"
+                  [alt]="product.title"
+                  class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                />
 
-    <h4
-      class="font-bold text-base text-black mb-1 line-clamp-1"
-      [title]="product.title"
-    >
-      {{ product.title }}
-    </h4>
+              </div>
 
 
-    <!-- CATEGORY -->
+              <!-- TITLE -->
 
-    <div class="text-xs text-gray-500 mb-2">
-      {{ product.category }}
-    </div>
-
-
-    <!-- RATING -->
-
-    <div class="flex items-center gap-2 mb-2">
-
-      <div class="flex text-amber-400 text-sm">
-
-        <span>&#9733;</span>
-        <span>&#9733;</span>
-        <span>&#9733;</span>
-        <span>&#9733;</span>
-
-        <span class="text-gray-300">
-          &#9733;
-        </span>
-
-      </div>
-
-      <span class="text-xs text-gray-500 font-medium">
-        4.0/5
-      </span>
-
-    </div>
+              <h4
+                class="font-bold text-base text-black mb-1 line-clamp-1"
+                [title]="product.title"
+              >
+                {{ product.title }}
+              </h4>
 
 
-    <!-- PRICE -->
+              <!-- CATEGORY -->
 
-    <div class="flex items-center gap-2.5">
-
-      <span class="text-xl font-bold">
-        ${{ product.price }}
-      </span>
-
-    </div>
+              <div class="text-xs text-gray-500 mb-2">
+                {{ product.category }}
+              </div>
 
 
-    <!-- QUANTITY -->
+              <!-- RATING -->
 
-    <div
-      *ngIf="product.quantity !== undefined"
-      class="text-xs text-gray-500 mt-1"
-    >
-      {{ product.quantity }} available
-    </div>
+              <div class="flex items-center gap-2 mb-2">
 
-  </div>
+                <div class="flex text-amber-400 text-sm">
 
-</div>
+                  <span>&#9733;</span>
+                  <span>&#9733;</span>
+                  <span>&#9733;</span>
+                  <span>&#9733;</span>
+
+                  <span class="text-gray-300">
+                    &#9733;
+                  </span>
+
+                </div>
+
+                <span class="text-xs text-gray-500 font-medium">
+                  4.0/5
+                </span>
+
+              </div>
+
+
+              <!-- PRICE -->
+
+              <div class="flex items-center gap-2.5">
+
+                <span class="text-xl font-bold">
+                  ${{ product.price }}
+                </span>
+
+              </div>
+
+
+              <!-- QUANTITY -->
+
+              @if (product.quantity !== undefined) {
+                <div
+                  class="text-xs text-gray-500 mt-1"
+                >
+                  {{ product.quantity }} available
+                </div>
+              }
+
+            </div>
+
+          } @empty {
+            <!-- This @empty is a fallback inside the grid, but we already handled empty above -->
+            <!-- Keeping it here as a safety net -->
+          }
+
+        </div>
+
+      }
+
 
       <!-- ========================= -->
       <!-- PAGINATION -->
       <!-- ========================= -->
 
-      <footer
-        *ngIf="filteredProducts.length > 0"
-        class="flex justify-between items-center mt-10 pt-5 border-t border-gray-200"
-      >
+      @if (filteredProducts.length > 0) {
 
-        <!-- Previous -->
-
-        <button
-          (click)="previousPage()"
-          [disabled]="currentPage === 1"
-          class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        <footer
+          class="flex justify-between items-center mt-10 pt-5 border-t border-gray-200"
         >
 
-          &#8592; Previous
-
-        </button>
-
-
-        <!-- Pages -->
-
-        <div
-          class="flex items-center gap-1 text-sm font-medium"
-        >
+          <!-- Previous -->
 
           <button
-            *ngFor="let page of pageNumbers"
-            (click)="goToPage(page)"
-            class="w-8 h-8 flex items-center justify-center rounded-lg"
-            [class.bg-gray-100]="currentPage === page"
-            [class.font-bold]="currentPage === page"
-            [class.hover:bg-gray-50]="currentPage !== page"
-            [class.text-gray-500]="currentPage !== page"
+            (click)="previousPage()"
+            [disabled]="currentPage === 1"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
           >
 
-            {{ page }}
+            &#8592; Previous
 
           </button>
 
-        </div>
+
+          <!-- Pages -->
+
+          <div
+            class="flex items-center gap-1 text-sm font-medium"
+          >
+
+            @for (page of pageNumbers; track page) {
+              <button
+                (click)="goToPage(page)"
+                class="w-8 h-8 flex items-center justify-center rounded-lg"
+                [class.bg-gray-100]="currentPage === page"
+                [class.font-bold]="currentPage === page"
+                [class.hover:bg-gray-50]="currentPage !== page"
+                [class.text-gray-500]="currentPage !== page"
+              >
+
+                {{ page }}
+
+              </button>
+            }
+
+          </div>
 
 
-        <!-- Next -->
+          <!-- Next -->
 
-        <button
-          (click)="nextPage()"
-          [disabled]="currentPage === totalPages"
-          class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage === totalPages"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
 
-          Next &#8594;
+            Next &#8594;
 
-        </button>
+          </button>
 
-      </footer>
+        </footer>
+
+      }
 
     </main>
 

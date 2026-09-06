@@ -2,19 +2,98 @@
     <h2 class="text-3xl font-black lg:text-4xl text-global-black pb-2">NEW ARRIVALS</h2>
     <div class="grid grid-cols-2 lg:grid-cols-4 w-full gap-4">
 
-        @for (product of products(); track product.id) {
-           <a [routerLink]="['/product', product.id]">
-                <div class="flex flex-col items-center gap-3">
-                    <img src="{{product.url}}" class="bg-global-light aspect-square rounded-2xl size-auto" alt="">
-                    <div class="flex flex-col  w-full  gap-1 items-start">
-                        <h3 class="text-base py-0.5 font-bold">{{product.title}}</h3>
-                        <span class="text-xl text-global-grey">{{product.price}}$</span>
-                    </div>
+          @for (product of products(); track product.id) {
+
+            <div
+              [routerLink]="['/product', product.id]"
+              class="flex flex-col group cursor-pointer"
+            >
+
+              <!-- IMAGE -->
+
+              <div
+                class="bg-[#F0EEED] rounded-2xl h-72 flex items-center justify-center p-4 mb-3 overflow-hidden"
+              >
+
+                <img
+                  [src]="product.url"
+                  [alt]="product.title"
+                  class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+
+              </div>
+
+
+              <!-- TITLE -->
+
+              <h4
+                class="font-bold text-base text-black mb-1 line-clamp-1"
+                [title]="product.title"
+              >
+                {{ product.title }}
+              </h4>
+
+
+              <!-- CATEGORY -->
+
+              <div class="text-xs text-gray-500 mb-2">
+                {{ product.category }}
+              </div>
+
+
+              <!-- RATING -->
+
+              <div class="flex items-center gap-2 mb-2">
+
+                <div class="flex text-amber-400 text-sm">
+
+                  <span>&#9733;</span>
+                  <span>&#9733;</span>
+                  <span>&#9733;</span>
+                  <span>&#9733;</span>
+
+                  <span class="text-gray-300">
+                    &#9733;
+                  </span>
+
                 </div>
-            </a>
-        } 
+
+                <span class="text-xs text-gray-500 font-medium">
+                  4.0/5
+                </span>
+
+              </div>
+
+
+              <!-- PRICE -->
+
+              <div class="flex items-center gap-2.5">
+
+                <span class="text-xl font-bold">
+                  ${{ product.price }}
+                </span>
+
+              </div>
+
+
+              <!-- QUANTITY -->
+
+              @if (product.quantity !== undefined) {
+                <div
+                  class="text-xs text-gray-500 mt-1"
+                >
+                  {{ product.quantity }} available
+                </div>
+              }
+
+            </div>
+
+          } @empty {
+            <!-- This @empty is a fallback inside the grid, but we already handled empty above -->
+            <!-- Keeping it here as a safety net -->
+          }
 
     </div>
     
-    <button class="py-1 px-8 border border-global-light rounded-full hover:border-global-dark ">  <a routerLink="/products-category" >View All</a> </button>
+    <a routerLink="/products-category" ><button class="py-1 px-8 border border-global-light rounded-full hover:border-global-dark "> View All </button></a> 
 </div>
