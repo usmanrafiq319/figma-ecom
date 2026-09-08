@@ -139,6 +139,10 @@ export class AdminProducts implements OnInit, OnDestroy {
     this.submitting = true;
     const formData = toProductFormData(this.formDto);
 
+    for (const [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
     if (this.isEditMode && this.editingProductId) {
       const sub = this.productService.updateProduct(this.editingProductId, formData).subscribe({
         next: () => {
