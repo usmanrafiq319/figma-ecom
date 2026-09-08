@@ -37,6 +37,7 @@
         [(ngModel)]="user.password"
         name="password"
         placeholder="Enter Password"
+        autocomplete="new-password" 
         class="flex w-2/3 p-3 border bg-global-white border-global-grey-100 font-medium hover:border-global-dark-100 rounded-md"
         [disabled]="isLoading"
     >
@@ -47,6 +48,7 @@
         [(ngModel)]="confirmPassword"
         name="confirmPassword"
         placeholder="Confirm Password"
+        autocomplete="new-password" 
         class="flex w-2/3 p-3 border bg-global-white border-global-grey-100 font-medium hover:border-global-dark-100 rounded-md"
         [disabled]="isLoading"
         (keydown.enter)="registerUser()"

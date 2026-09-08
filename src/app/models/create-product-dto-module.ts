@@ -15,7 +15,7 @@ export function toProductFormData(dto: CreateProductDto): FormData {
   formData.append('description', dto.description || '');
   formData.append('category', dto.category);
 
-  if (dto.image) {
+  if (dto.image && dto.image instanceof File) {
     formData.append('image', dto.image, dto.image.name);
   }
 
