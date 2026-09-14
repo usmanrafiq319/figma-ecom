@@ -124,28 +124,31 @@ refreshToken(): Observable<string> {
     this.router.navigate(['/']);
   }
 
-  forgotPassword(): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.baseUrl}/forgot-password`, {})
+  forgotPassword(email: string): Observable<ApiResponse> {
+    const request: ForgotPasswordRequest = { email };
+    return this.http.post<ApiResponse>(`${this.baseUrl}/forgot-password`, request)
       .pipe(
+        tap(() => localStorage.setItem('resetEmail', email)),
         catchError(err => this.handleError(err))
       );
   }
 
-  verifyOtp( code: string): Observable<ApiResponse> {
-    const request: VerifyOtpRequest = { code };
+  verifyOtp(email: string, code: string): Observable<ApiResponse> {
+    const request: VerifyOtpRequest = { email, code };
     return this.http.post<ApiResponse>(`${this.baseUrl}/verify-otp`, request)
       .pipe(
         tap(response => {
           if (response.resetToken) {
             localStorage.setItem('resetToken', response.resetToken);
+            localStorage.setItem('resetEmail', email);
           }
         }),
         catchError(err => this.handleError(err))
       );
   }
 
-  resetPassword( resetToken: string, newPassword: string): Observable<ApiResponse> {
-    const request: ResetPasswordRequest = {  resetToken, newPassword };
+  resetPassword(email: string, resetToken: string, newPassword: string): Observable<ApiResponse> {
+    const request: ResetPasswordRequest = { email, resetToken, newPassword };
     return this.http.post<ApiResponse>(`${this.baseUrl}/reset-password`, request)
       .pipe(
         tap(() => this.clearResetData()),
