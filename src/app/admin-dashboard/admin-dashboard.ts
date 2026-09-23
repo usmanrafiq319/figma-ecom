@@ -1,16 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit
-} from '@angular/core';
+import {ChangeDetectionStrategy,ChangeDetectorRef,Component,OnDestroy,OnInit} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ChatSignalrService } from '../services/chat-signalr-service';
 import { ChatApiService } from '../services/chat-api-service';
 import { ChatConnectionStatus } from '../models/chat.models';
 import { ProductService } from '../services/product-service';
+import { OrderService } from '../services/order-service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -31,12 +26,20 @@ export class AdminDashboard implements OnInit, OnDestroy {
   productsLoading = true;
   productsError = false;
 
+  // Order Section State
+  totalOrders = 0;
+  pendingOrders = 0;
+  processingOrders = 0;
+  ordersLoading = true;
+  ordersError = false;
+
   connectionStatus: ChatConnectionStatus = 'disconnected';
   private readonly subscriptions = new Subscription();
 
   constructor(
     private readonly chatApi: ChatApiService,
     private readonly chatSignalr: ChatSignalrService,
+    private readonly orderService: OrderService,
     private readonly productService: ProductService,
     private readonly changeDetector: ChangeDetectorRef
   ) {}
@@ -45,7 +48,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
     this.subscribeToChatEvents();
     this.loadSummary();
     this.loadProductsSummary();
-
+    this.loadOrdersSummary();
     try {
       await this.chatSignalr.startConnection();
       console.log('[Admin dashboard] SignalR connected');
@@ -159,6 +162,48 @@ export class AdminDashboard implements OnInit, OnDestroy {
     }
   }
 
+  loadOrdersSummary(): void {
+  this.ordersLoading = true;
+  this.ordersError = false;
+
+  const ordersSub = this.orderService.getAllOrders().subscribe({
+    next: orders => {
+      this.totalOrders = orders.length;
+
+      this.pendingOrders = orders.filter(
+        order => order.status.toLowerCase() === 'pending'
+      ).length;
+
+      this.processingOrders = orders.filter(
+        order => order.status.toLowerCase() === 'processing'
+      ).length;
+
+      this.ordersLoading = false;
+      this.ordersError = false;
+
+      this.changeDetector.markForCheck();
+    },
+
+    error: error => {
+      this.ordersLoading = false;
+      this.ordersError = true;
+
+      console.error(
+        '[Admin dashboard] Could not load orders:',
+        error
+      );
+
+      this.changeDetector.markForCheck();
+    }
+  });
+
+  this.subscriptions.add(ordersSub);
+  }
+
+  retryOrders(): void {
+  this.loadOrdersSummary();
+  
+}
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }

@@ -1,47 +1,36 @@
 <div class="max-w-7xl mx-auto p-6 font-sans text-black">
-
   <div class="flex gap-8">
 
     <!-- ========================= -->
     <!-- LEFT SIDEBAR -->
     <!-- ========================= -->
-
     <aside
-      class="w-72 shrink-0 border border-gray-200 rounded-3xl p-6 bg-white self-start"
+      class="fixed inset-y-0 left-0 z-50 w-80 bg-white p-6 overflow-y-auto transform transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:w-72 lg:shrink-0 lg:border lg:border-gray-200 lg:rounded-3xl lg:p-6 lg:bg-white lg:self-start lg:z-auto"
+      [class.translate-x-0]="isFilterOpen"
+      [class.-translate-x-full]="!isFilterOpen"
     >
-
       <!-- Filter Header -->
-      <div
-        class="flex justify-between items-center pb-4 border-b border-gray-200"
-      >
+      <div class="flex justify-between items-center pb-4 border-b border-gray-200">
+        <h3 class="text-xl font-bold">Filters</h3>
 
-        <h3 class="text-xl font-bold">
-          Filters
-        </h3>
-
-        <svg
-          class="w-5 h-5 text-gray-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+        <!-- Mobile Close Button -->
+        <button 
+          (click)="isFilterOpen = false"
+          type="button"
+          class="lg:hidden text-gray-500 hover:text-black p-1"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-          />
-        </svg>
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
+        <svg class="hidden lg:block w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        </svg>
       </div>
 
-
-      <!-- ========================= -->
-      <!-- DYNAMIC CATEGORIES -->
-      <!-- ========================= -->
-
+      <!-- Categories -->
       <ul class="py-4 border-b border-gray-200 space-y-3">
-
         @for (category of categories; track category) {
           <li
             (click)="selectCategory(category)"
@@ -51,37 +40,17 @@
             [class.text-gray-600]="selectedCategory !== category"
             [class.hover:text-black]="selectedCategory !== category"
           >
-
-            <span>
-              {{ category }}
-            </span>
-
-            <span>
-              &#8250;
-            </span>
-
+            <span>{{ category }}</span>
+            <span>&#8250;</span>
           </li>
         }
-
       </ul>
 
-
-      <!-- ========================= -->
-      <!-- PRICE FILTER -->
-      <!-- ========================= -->
-
+      <!-- Price Filter -->
       <div class="py-4 border-b border-gray-200">
-
         <div class="flex justify-between items-center mb-3">
-
-          <span class="font-bold text-lg">
-            Price
-          </span>
-
-          <span class="text-xs">
-            &#9650;
-          </span>
-
+          <span class="font-bold text-lg">Price</span>
+          <span class="text-xs">&#9650;</span>
         </div>
 
         <input
@@ -93,43 +62,20 @@
           class="w-full accent-black cursor-pointer"
         />
 
-        <div
-          class="flex justify-between text-sm font-semibold mt-2"
-        >
-
-          <span>
-            ${{ minPrice }}
-          </span>
-
-          <span>
-            ${{ maxPrice }}
-          </span>
-
+        <div class="flex justify-between text-sm font-semibold mt-2">
+          <span>${{ minPrice }}</span>
+          <span>${{ maxPrice }}</span>
         </div>
-
       </div>
 
-
-      <!-- ========================= -->
-      <!-- COLOR -->
-      <!-- ========================= -->
-
+      <!-- Colors -->
       <div class="py-4 border-b border-gray-200">
-
         <div class="flex justify-between items-center mb-3">
-
-          <span class="font-bold text-lg">
-            Colors
-          </span>
-
-          <span class="text-xs">
-            &#9650;
-          </span>
-
+          <span class="font-bold text-lg">Colors</span>
+          <span class="text-xs">&#9650;</span>
         </div>
 
         <div class="grid grid-cols-5 gap-2.5">
-
           @for (color of colors; track color) {
             <button
               type="button"
@@ -141,7 +87,6 @@
               [class.ring-black]="selectedColor === color"
               (click)="selectColor(color)"
             >
-
               @if (selectedColor === color) {
                 <svg
                   class="w-4 h-4"
@@ -151,45 +96,22 @@
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="3"
-                    d="M5 13l4 4L19 7"
-                  />
-
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                 </svg>
               }
-
             </button>
           }
-
         </div>
-
       </div>
 
-
-      <!-- ========================= -->
-      <!-- SIZE -->
-      <!-- ========================= -->
-
+      <!-- Size -->
       <div class="py-4 border-b border-gray-200">
-
         <div class="flex justify-between items-center mb-3">
-
-          <span class="font-bold text-lg">
-            Size
-          </span>
-
-          <span class="text-xs">
-            &#9650;
-          </span>
-
+          <span class="font-bold text-lg">Size</span>
+          <span class="text-xs">&#9650;</span>
         </div>
 
         <div class="flex flex-wrap gap-2">
-
           @for (size of sizes; track size) {
             <button
               type="button"
@@ -200,325 +122,189 @@
               [class.text-gray-600]="selectedSize !== size"
               (click)="selectSize(size)"
             >
-
               {{ size }}
-
             </button>
           }
-
         </div>
-
       </div>
 
-
-      <!-- ========================= -->
-      <!-- DRESS STYLE -->
-      <!-- ========================= -->
-
+      <!-- Dress Style -->
       <div class="py-4">
-
         <div class="flex justify-between items-center mb-3">
-
-          <span class="font-bold text-lg">
-            Dress Style
-          </span>
-
-          <span class="text-xs">
-            &#9650;
-          </span>
-
+          <span class="font-bold text-lg">Dress Style</span>
+          <span class="text-xs">&#9650;</span>
         </div>
 
         <ul class="space-y-3">
-
           @for (style of dressStyles; track style) {
-            <li
-              class="flex justify-between items-center text-gray-600 hover:text-black cursor-pointer text-sm"
-            >
-
-              <span>
-                {{ style }}
-              </span>
-
-              <span>
-                &#8250;
-              </span>
-
+            <li class="flex justify-between items-center text-gray-600 hover:text-black cursor-pointer text-sm">
+              <span>{{ style }}</span>
+              <span>&#8250;</span>
             </li>
           }
-
         </ul>
-
       </div>
 
-
-      <!-- Apply -->
+      <!-- Actions -->
       <button
-        (click)="applyFilter()"
+        (click)="applyFilter(); isFilterOpen = false"
         class="w-full bg-black text-white font-medium py-3 rounded-full mt-4 hover:bg-gray-800 transition"
       >
         Apply Filter
       </button>
 
-
-      <!-- Clear -->
       <button
         (click)="clearFilters()"
         class="w-full border border-gray-300 text-black font-medium py-3 rounded-full mt-3 hover:bg-gray-100 transition"
       >
         Clear Filters
       </button>
-
     </aside>
 
+    <!-- Overlay Backdrop for Mobile -->
+    @if (isFilterOpen) {
+      <div 
+        (click)="isFilterOpen = false"
+        class="fixed inset-0 bg-black/40 z-40 lg:hidden"
+      ></div>
+    }
 
     <!-- ========================= -->
     <!-- RIGHT CONTENT -->
     <!-- ========================= -->
-
     <main class="flex-1">
 
+<header class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+  <!-- Title & Mobile Filter Trigger Row -->
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl sm:text-3xl font-black truncate">
+      {{ selectedCategory }}
+    </h2>
 
-      <!-- ========================= -->
-      <!-- HEADER -->
-      <!-- ========================= -->
+    <!-- Mobile Filter Button -->
+    <button 
+      (click)="toggleFilter()"
+      type="button"
+      class="lg:hidden p-2.5 rounded-full bg-gray-100 text-black hover:bg-gray-200 transition shrink-0 ml-2"
+      aria-label="Open Filters"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+      </svg>
+    </button>
+  </div>
 
-      <header
-        class="flex justify-between items-center mb-6"
+  <!-- Meta Info & Sort Control -->
+  <div class="flex items-center justify-between sm:justify-end gap-3 text-xs sm:text-sm text-gray-500">
+    <span class="whitespace-nowrap">
+      Showing {{ paginatedProducts.length }} of {{ totalProducts }}
+    </span>
+
+    <div class="flex items-center gap-1 cursor-pointer shrink-0">
+      <span>Sort by: <strong class="text-black font-semibold">Most Popular</strong></span>
+      <span class="text-[10px]">&#9660;</span>
+    </div>
+  </div>
+</header>
+
+<!-- PRODUCT GRID / NO PRODUCTS -->
+@if (filteredProducts.length === 0) {
+  <div class="border border-gray-200 rounded-3xl p-8 sm:p-12 text-center">
+    <h3 class="text-xl font-bold mb-2">No products found</h3>
+    <p class="text-gray-500 mb-5 text-sm sm:text-base">Try changing your category or price filter.</p>
+    <button
+      (click)="clearFilters()"
+      class="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 transition text-sm font-medium"
+    >
+      Clear Filters
+    </button>
+  </div>
+} @else {
+  <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-3 sm:gap-5">
+    @for (product of paginatedProducts; track product.id) {
+      <div
+        [routerLink]="['/product', product.id]"
+        class="flex flex-col group cursor-pointer"
       >
+        <!-- IMAGE -->
+        <div class="bg-[#F0EEED] rounded-2xl h-48 sm:h-64 md:h-72 flex items-center justify-center p-3 sm:p-4 mb-2 sm:mb-3 overflow-hidden">
+          <img
+            [src]="product.url"
+            [alt]="product.title"
+            class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+          />
+        </div>
 
-        <h2 class="text-3xl font-black">
-          {{ selectedCategory }}
-        </h2>
-
-        <div
-          class="flex items-center gap-4 text-sm text-gray-500"
+        <!-- TITLE -->
+        <h4
+          class="font-bold text-sm sm:text-base text-black mb-0.5 sm:mb-1 line-clamp-1"
+          [title]="product.title"
         >
+          {{ product.title }}
+        </h4>
 
-          <span>
-            Showing
-            {{ paginatedProducts.length }}
-            of
-            {{ totalProducts }}
-            Products
-          </span>
+        <!-- CATEGORY -->
+        <div class="text-[11px] sm:text-xs text-gray-500 mb-1 sm:mb-2">
+          {{ product.category }}
+        </div>
 
-          <div
-            class="flex items-center gap-1 cursor-pointer"
-          >
-
-            <span>
-              Sort by:
-              <strong class="text-black">
-                Most Popular
-              </strong>
-            </span>
-
-            <span class="text-xs">
-              &#9660;
-            </span>
-
+        <!-- RATING -->
+        <div class="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+          <div class="flex text-amber-400 text-xs sm:text-sm">
+            <span>&#9733;</span>
+            <span>&#9733;</span>
+            <span>&#9733;</span>
+            <span>&#9733;</span>
+            <span class="text-gray-300">&#9733;</span>
           </div>
-
+          <span class="text-[11px] sm:text-xs text-gray-500 font-medium">4.0/5</span>
         </div>
 
-      </header>
-
-
-      <!-- ========================= -->
-      <!-- PRODUCT GRID / NO PRODUCTS -->
-      <!-- ========================= -->
-
-      @if (filteredProducts.length === 0) {
-
-        <div
-          class="border border-gray-200 rounded-3xl p-12 text-center"
-        >
-
-          <h3 class="text-xl font-bold mb-2">
-            No products found
-          </h3>
-
-          <p class="text-gray-500 mb-5">
-            Try changing your category or price filter.
-          </p>
-
-          <button
-            (click)="clearFilters()"
-            class="bg-black text-white px-6 py-3 rounded-full"
-          >
-            Clear Filters
-          </button>
-
+        <!-- PRICE -->
+        <div class="flex items-center gap-2">
+          <span class="text-lg sm:text-xl font-bold">${{ product.price }}</span>
         </div>
+      </div>
+    }
+  </div>
+}
 
-      } @else {
-
-        <div
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-        >
-
-          @for (product of paginatedProducts; track product.id) {
-
-            <div
-              [routerLink]="['/product', product.id]"
-              class="flex flex-col group cursor-pointer"
-            >
-
-              <!-- IMAGE -->
-
-              <div
-                class="bg-[#F0EEED] rounded-2xl h-72 flex items-center justify-center p-4 mb-3 overflow-hidden"
-              >
-
-                <img
-                  [src]="product.url"
-                  [alt]="product.title"
-                  class="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-
-              </div>
-
-
-              <!-- TITLE -->
-
-              <h4
-                class="font-bold text-base text-black mb-1 line-clamp-1"
-                [title]="product.title"
-              >
-                {{ product.title }}
-              </h4>
-
-
-              <!-- CATEGORY -->
-
-              <div class="text-xs text-gray-500 mb-2">
-                {{ product.category }}
-              </div>
-
-
-              <!-- RATING -->
-
-              <div class="flex items-center gap-2 mb-2">
-
-                <div class="flex text-amber-400 text-sm">
-
-                  <span>&#9733;</span>
-                  <span>&#9733;</span>
-                  <span>&#9733;</span>
-                  <span>&#9733;</span>
-
-                  <span class="text-gray-300">
-                    &#9733;
-                  </span>
-
-                </div>
-
-                <span class="text-xs text-gray-500 font-medium">
-                  4.0/5
-                </span>
-
-              </div>
-
-
-              <!-- PRICE -->
-
-              <div class="flex items-center gap-2.5">
-
-                <span class="text-xl font-bold">
-                  ${{ product.price }}
-                </span>
-
-              </div>
-
-
-              <!-- QUANTITY -->
-<!-- 
-              @if (product.quantity !== undefined) {
-                <div
-                  class="text-xs text-gray-500 mt-1"
-                >
-                  {{ product.quantity }} available
-                </div>
-              } -->
-
-            </div>
-
-          } @empty {
-            <!-- This @empty is a fallback inside the grid, but we already handled empty above -->
-            <!-- Keeping it here as a safety net -->
-          }
-
-        </div>
-
-      }
-
-
-      <!-- ========================= -->
       <!-- PAGINATION -->
-      <!-- ========================= -->
-
       @if (filteredProducts.length > 0) {
-
-        <footer
-          class="flex justify-between items-center mt-10 pt-5 border-t border-gray-200"
-        >
-
-          <!-- Previous -->
-
+        <footer class="flex justify-between items-center mt-10 pt-5 border-t border-gray-200">
           <button
             (click)="previousPage()"
             [disabled]="currentPage === 1"
-            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
-
             &#8592; Previous
-
           </button>
 
-
-          <!-- Pages -->
-
-          <div
-            class="flex items-center gap-1 text-sm font-medium"
-          >
-
+          <div class="flex items-center gap-1 text-sm font-medium">
             @for (page of pageNumbers; track page) {
               <button
                 (click)="goToPage(page)"
-                class="w-8 h-8 flex items-center justify-center rounded-lg"
+                class="w-8 h-8 flex items-center justify-center rounded-lg transition"
                 [class.bg-gray-100]="currentPage === page"
                 [class.font-bold]="currentPage === page"
                 [class.hover:bg-gray-50]="currentPage !== page"
                 [class.text-gray-500]="currentPage !== page"
               >
-
                 {{ page }}
-
               </button>
             }
-
           </div>
-
-
-          <!-- Next -->
 
           <button
             (click)="nextPage()"
             [disabled]="currentPage === totalPages"
-            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
-
             Next &#8594;
-
           </button>
-
         </footer>
-
       }
 
     </main>
-
   </div>
-
 </div>

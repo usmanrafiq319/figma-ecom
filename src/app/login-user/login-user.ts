@@ -1,62 +1,124 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+
 import { AuthService } from '../services/auth-service';
 import { AuthUserModel } from '../models/auth-user-model';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login-user',
-  imports: [FormsModule,RouterLink],
+  imports: [
+    FormsModule,
+    RouterLink
+  ],
   templateUrl: './login-user.html',
-  styleUrl: './login-user.scss',
+  styleUrl: './login-user.scss'
 })
 export class LoginUser {
-  service = inject(AuthService);
-  router = inject(Router);
-  route = inject(ActivatedRoute);
+
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+
+  private returnUrl = '/';
 
   user: AuthUserModel = {
-    username: "",
-    password: ""
+    username: '',
+    password: ''
   };
 
-  isLoading = false;
-  errorMessage: string | null = null;
-  private returnUrl: string = '/';
+  ngOnInit(): void {
 
-  ngOnInit() {
-    // Check if there's a return URL in query params
     this.route.queryParams.subscribe(params => {
+
       this.returnUrl = params['returnUrl'] || '/';
+
     });
+
   }
 
-  authuser() {
-    this.isLoading = true;
-    this.errorMessage = null;
 
-    this.service.authUser(this.user).subscribe({
+  authuser(): void {
+
+    // Don't submit if fields are empty
+    if (!this.user.username.trim() || !this.user.password) {
+      return;
+    }
+
+    // Prevent multiple requests
+    if (this.isLoading()) {
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+
+    this.authService.authUser(this.user).subscribe({
+
       next: (res) => {
+
         console.log('Login successful');
-        const token = res.accessToken;
-        this.service.saveToken(token);
-        
-        // Navigate to the return URL or home
+
+        // Save access token
+        this.authService.saveToken(res.accessToken);
+
+        // Only navigate after successful login
         this.router.navigateByUrl(this.returnUrl);
-        this.isLoading = false;
+
+        this.isLoading.set(false);
+
       },
+
+
       error: (err: HttpErrorResponse) => {
-        this.isLoading = false;
-        
-        // 1. Check if the backend sent a custom error string
-        if (err.status === 400 && typeof err.error === 'string') {
-          this.errorMessage = err.error;
-        } else {
-          this.errorMessage = 'An unexpected network error occurred.';
+
+        console.error('Login failed:', err);
+
+        this.isLoading.set(false);
+
+
+        if (err.status === 401) {
+
+          this.errorMessage.set(
+            typeof err.error === 'string'
+              ? err.error
+              : 'Invalid username or password.'
+          );
+
         }
-        console.error('Full Error Details:', err);
+        else if (err.status === 0) {
+
+          this.errorMessage.set(
+            'Unable to connect to the server. Please try again.'
+          );
+
+        }
+        else {
+
+          this.errorMessage.set(
+            'Unable to login. Please try again.'
+          );
+
+        }
+
       }
+
     });
+
   }
+
+
+  clearError(): void {
+
+    if (this.errorMessage()) {
+      this.errorMessage.set(null);
+    }
+
+  }
+
 }

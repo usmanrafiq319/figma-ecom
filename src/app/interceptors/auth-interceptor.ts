@@ -18,10 +18,11 @@ import {
 
 import { AuthService } from '../services/auth-service';
 
+
 let isRefreshing = false;
 
-const refreshTokenSubject =
-  new BehaviorSubject<string | null>(null);
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
@@ -33,35 +34,54 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     withCredentials: true
   });
 
-  // Don't attach expired/current access token to refresh request
+
+  // Don't attach access token to refresh request
   if (
     token &&
     !req.url.includes('/access-token')
   ) {
+
     modifiedReq = modifiedReq.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
+
   }
+
 
   return next(modifiedReq).pipe(
 
     catchError((error: HttpErrorResponse) => {
 
-      // Access token expired
+      /*
+       * Do NOT try to refresh the token when:
+       *
+       * 1. The request itself is /access-token
+       * 2. The request itself is /login
+       *
+       * A 401 from /login simply means
+       * username/password are incorrect.
+       */
+
       if (
         error.status === 401 &&
-        !req.url.includes('/access-token')
+        !req.url.includes('/access-token') &&
+        !req.url.includes('/login')
       ) {
+
         return handle401Error(
           modifiedReq,
           next,
           auth
         );
+
       }
 
+
+      // Pass the original error back to the component
       return throwError(() => error);
+
     })
   );
 };
@@ -79,6 +99,7 @@ function handle401Error(
 
     refreshTokenSubject.next(null);
 
+
     return auth.refreshToken().pipe(
 
       switchMap((newAccessToken: string) => {
@@ -86,6 +107,7 @@ function handle401Error(
         isRefreshing = false;
 
         refreshTokenSubject.next(newAccessToken);
+
 
         return next(
           req.clone({
@@ -96,18 +118,20 @@ function handle401Error(
             withCredentials: true
           })
         );
+
       }),
+
 
       catchError((error) => {
 
         isRefreshing = false;
 
-        // Release requests waiting for refresh
         refreshTokenSubject.next(null);
 
         auth.clearLocalSession();
 
         return throwError(() => error);
+
       })
     );
   }
@@ -134,6 +158,7 @@ function handle401Error(
           withCredentials: true
         })
       );
+
     })
   );
 }

@@ -37,7 +37,6 @@ export const routes: Routes = [{
     },
     {
         path: 'reset-password',
-        canActivate:[authGuard],
         loadComponent:()=>{
             return import ("./reset-password-component/reset-password-component").then(m=>m.ResetPasswordComponent)
         } 
@@ -68,4 +67,9 @@ export const routes: Routes = [{
         canActivate: [authGuard],
         loadComponent: () => import("./product-category/product-category").then(m=>m.ProductCategory)
     },   
+        {
+        path: "admin-orders",
+        canActivate: [authGuard],
+        loadComponent: () => import("./admin-orders/admin-orders").then(m=>m.AdminOrders)
+    }, 
 ];

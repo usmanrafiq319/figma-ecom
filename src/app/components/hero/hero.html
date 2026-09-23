@@ -1,5 +1,5 @@
-<!-- Parent Container -->
-<div class="relative w-full lg:min-h-[450px] bg-[#F2F0F1] flex flex-col lg:flex-row lg:items-center overflow-hidden global-px">
+<!-- Parent Container (Bottom padding removed entirely) -->
+<div class="relative w-full pt-8 lg:pt-12 pb-0 bg-[#F2F0F1] flex flex-col lg:flex-row lg:items-center overflow-hidden global-px">
   
   <!-- DESKTOP IMAGE: Unchanged -->
   <img 
@@ -8,11 +8,11 @@
     class="hidden lg:block absolute right-0 bottom-0 h-[85%] max-h-[400px] w-auto object-contain object-right-bottom z-0"
   />
 
-  <!-- Main Content Layer -->
-  <div class="relative z-10 w-full grid grid-cols-1 lg:grid-cols-2 py-8 lg:py-12">
+  <!-- Main Content Layer (Bottom padding zeroed out) -->
+  <div class="relative z-10 w-full grid grid-cols-1 lg:grid-cols-2 pt-0 pb-0">
     
     <!-- Left Column -->
-    <div class="flex flex-col justify-center max-w-xl mx-auto lg:mx-0">
+    <div class="flex flex-col justify-center max-w-xl mx-auto lg:mx-0 w-full">
       
       <!-- Headline -->
       <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-black leading-tight mb-3 text-center lg:text-left">
@@ -32,7 +32,7 @@
       </div>
       
       <!-- Statistics Row -->
-      <div class="flex flex-wrap items-center justify-center lg:justify-start gap-6 sm:gap-10 text-center sm:text-left mb-8 lg:mb-0">
+      <div class="flex flex-wrap items-center justify-center lg:justify-start gap-6 sm:gap-10 text-center sm:text-left mb-8">
         <div class="border-b sm:border-b-0 sm:border-r border-black/10 pb-4 sm:pb-0 sm:pr-10 last:border-none">
             <span class="block text-2xl sm:text-3xl font-bold text-black mb-0.5">200+</span>
             <span class="block text-[11px] sm:text-xs text-black/60">International Brands</span>
@@ -49,12 +49,12 @@
         </div>
       </div>
 
-      <!-- NEW MOBILE IMAGE: Using negative margins to break out of global-px padding -->
-      <div class="block lg:hidden w-[calc(100%+2rem)] -mx-4 pt-4">
+      <!-- FIXED MOBILE IMAGE CONTAINER -->
+      <div class="block lg:hidden w-[calc(100%+2rem)] -mx-4 pt-6">
         <img 
           src="logos/hero-image-2.png" 
           alt="Featured Collection Styles" 
-          class="w-full h-auto max-h-[360px] lg:max-h-[300] object-cover"
+          class="w-full h-auto object-contain block"
         />
       </div>
 
@@ -66,3 +66,4 @@
   </div>
 
 </div>
+

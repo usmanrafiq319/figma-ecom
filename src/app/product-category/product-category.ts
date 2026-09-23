@@ -81,67 +81,76 @@ export class ProductCategory implements OnInit {
   /**
    * Get products from API
    */
-loadProducts(): void {
+  loadProducts(): void {
 
-  this.productService.getProducts().subscribe({
+    this.productService.getProducts().subscribe({
 
-    next: (products) => {
+      next: (products) => {
 
-      this.products = products;
+        this.products = products;
 
-      // Create categories dynamically
-      this.categories = [
-        'All Products',
-        ...new Set(
-          products
-            .map(product => product.category)
-            .filter(
-              category =>
-                category &&
-                category.trim() !== ''
-            )
-        )
-      ];
+        // Create categories dynamically
+        this.categories = [
+          'All Products',
+          ...new Set(
+            products
+              .map(product => product.category)
+              .filter(
+                category =>
+                  category &&
+                  category.trim() !== ''
+              )
+          )
+        ];
 
-      // Find price range dynamically
-      if (products.length > 0) {
+        // Find price range dynamically
+        if (products.length > 0) {
 
-        const prices = products.map(
-          product => product.price
+          const prices = products.map(
+            product => product.price
+          );
+
+          this.minPrice = Math.min(...prices);
+
+          this.productMaxPrice = Math.max(...prices);
+
+          this.maxPrice = this.productMaxPrice;
+
+        } else {
+
+          this.minPrice = 0;
+          this.maxPrice = 0;
+          this.productMaxPrice = 0;
+
+        }
+
+        // Initially show everything
+        this.filteredProducts = [...this.products];
+
+        // Force Angular to update the template
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+
+        console.error(
+          'Error loading products:',
+          error
         );
-
-        this.minPrice = Math.min(...prices);
-
-        this.productMaxPrice = Math.max(...prices);
-
-        this.maxPrice = this.productMaxPrice;
-
-      } else {
-
-        this.minPrice = 0;
-        this.maxPrice = 0;
-        this.productMaxPrice = 0;
 
       }
 
-      // Initially show everything
-      this.filteredProducts = [...this.products];
+    });
+  }
 
-      // Force Angular to update the template
-      this.cdr.detectChanges();
-    },
+  //for opening and closing filter for small screens
+  // Add this variable to your component class
+  isFilterOpen = false;
 
-    error: (error) => {
+  toggleFilter(): void {
+    this.isFilterOpen = !this.isFilterOpen;
+  }
 
-      console.error(
-        'Error loading products:',
-        error
-      );
-
-    }
-
-  });
-}
 
   /**
    * Select category

@@ -1,47 +1,62 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, NgModel, ReactiveFormsModule, ValidationErrors, Validators  } from '@angular/forms';
+import { Component, OnDestroy, OnInit, signal, computed } from '@angular/core';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators
+} from '@angular/forms';
 import { AuthService } from '../services/auth-service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-reset-password-component',
-  imports: [ReactiveFormsModule,CommonModule],
+  standalone: true,
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './reset-password-component.html',
   styleUrl: './reset-password-component.scss',
 })
-
 export class ResetPasswordComponent implements OnInit, OnDestroy {
+
   // Step tracking
-  currentStep: number = 1;
-  maxSteps: number = 3;
-  
+  currentStep = signal<number>(1);
+  maxSteps = signal<number>(3);
+
   // Forms
   forgotPasswordForm!: FormGroup;
   verifyOtpForm!: FormGroup;
   resetPasswordForm!: FormGroup;
-  
-  // UI States
-  isSendingOtp: boolean = false;
-  isVerifyingOtp: boolean = false;
-  isResettingPassword: boolean = false;
-  
-  errorMessage: string = '';
-  successMessage: string = '';
-  otpSent: boolean = false;
-  otpVerified: boolean = false;
-  passwordReset: boolean = false;
-  
-  userEmail: string = '';
-  
+
+  // UI State
+  isSendingOtp = signal<boolean>(false);
+  isVerifyingOtp = signal<boolean>(false);
+  isResettingPassword = signal<boolean>(false);
+
+  errorMessage = signal<string>('');
+  successMessage = signal<string>('');
+
+  otpSent = signal<boolean>(false);
+  otpVerified = signal<boolean>(false);
+  passwordReset = signal<boolean>(false);
+
+  userEmail = signal<string>('');
+
   // Timer
-  resendTimer: number = 60;
-  resendInterval: any;
-  canResendOtp: boolean = false;
+  resendTimer = signal<number>(60);
+  canResendOtp = signal<boolean>(false);
+
+  private resendInterval: ReturnType<typeof setInterval> | null = null;
 
   // Password visibility
-  showPassword: boolean = false;
-  showConfirmPassword: boolean = false;
+  showPassword = signal<boolean>(false);
+  showConfirmPassword = signal<boolean>(false);
+
+  // Progress bar
+  progressPercentage = computed(
+    () => ((this.currentStep() - 1) / (this.maxSteps() - 1)) * 100
+  );
 
   constructor(
     private fb: FormBuilder,
@@ -49,21 +64,31 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
+  // =========================================================
+  // INIT
+  // =========================================================
+
   ngOnInit(): void {
+
     const storedEmail = this.authService.getStoredEmail();
     const storedToken = this.authService.getStoredResetToken();
-    
+
     if (storedEmail && storedToken) {
-      this.userEmail = storedEmail;
-      this.currentStep = 3;
-      this.otpSent = true;
-      this.otpVerified = true;
+
+      this.userEmail.set(storedEmail);
+      this.currentStep.set(3);
+
+      this.otpSent.set(true);
+      this.otpVerified.set(true);
+
     } else if (storedEmail) {
-      this.userEmail = storedEmail;
-      this.currentStep = 2;
-      this.otpSent = true;
+
+      this.userEmail.set(storedEmail);
+      this.currentStep.set(2);
+
+      this.otpSent.set(true);
     }
-    
+
     this.initForms();
   }
 
@@ -71,291 +96,622 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     this.clearResendTimer();
   }
 
+  // =========================================================
+  // FORM INITIALIZATION
+  // =========================================================
+
   initForms(): void {
+
     this.forgotPasswordForm = this.fb.group({
-      email: [this.userEmail || '', [Validators.required, Validators.email]]
+      email: [
+        this.userEmail() || '',
+        [
+          Validators.required,
+          Validators.email
+        ]
+      ]
     });
 
     this.verifyOtpForm = this.fb.group({
-      otp: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern('^[0-9]*$')]]
+      otp: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.maxLength(6),
+          Validators.pattern('^[0-9]*$')
+        ]
+      ]
     });
 
-    this.resetPasswordForm = this.fb.group({
-      password: ['', [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$')
-      ]],
-      confirmPassword: ['', [Validators.required]]
-    }, {
-      validators: this.passwordMatchValidator
-    });
+    this.resetPasswordForm = this.fb.group(
+      {
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(8),
+            Validators.pattern(
+              '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$'
+            )
+          ]
+        ],
+
+        confirmPassword: [
+          '',
+          [
+            Validators.required
+          ]
+        ]
+      },
+      {
+        validators: this.passwordMatchValidator
+      }
+    );
   }
 
-  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  // =========================================================
+  // PASSWORD MATCH VALIDATOR
+  // =========================================================
+
+  passwordMatchValidator(
+    control: AbstractControl
+  ): ValidationErrors | null {
+
     const password = control.get('password');
     const confirmPassword = control.get('confirmPassword');
-    
-    if (!password || !confirmPassword) return null;
-    
-    return password.value === confirmPassword.value ? null : { passwordMismatch: true };
+
+    if (!password || !confirmPassword) {
+      return null;
+    }
+
+    if (!password.value || !confirmPassword.value) {
+      return null;
+    }
+
+    return password.value === confirmPassword.value
+      ? null
+      : { passwordMismatch: true };
   }
 
-  // Step 1: Request OTP - INSTANT STEP CHANGE
+  // =========================================================
+  // PASSWORD VALUES
+  // =========================================================
+
+  get passwordValue(): string {
+    return this.resetPasswordForm?.get('password')?.value || '';
+  }
+
+  get confirmPasswordValue(): string {
+    return this.resetPasswordForm?.get('confirmPassword')?.value || '';
+  }
+
+  // =========================================================
+  // PASSWORD REQUIREMENTS
+  // =========================================================
+
+  passwordHasMinLength(): boolean {
+    return this.passwordValue.length >= 8;
+  }
+
+  passwordHasUppercase(): boolean {
+    return /[A-Z]/.test(this.passwordValue);
+  }
+
+  passwordHasLowercase(): boolean {
+    return /[a-z]/.test(this.passwordValue);
+  }
+
+  passwordHasNumber(): boolean {
+    return /[0-9]/.test(this.passwordValue);
+  }
+
+  passwordHasSpecial(): boolean {
+    return /[@$!%*?&]/.test(this.passwordValue);
+  }
+
+  passwordsMatch(): boolean {
+
+    const password = this.passwordValue;
+    const confirmPassword = this.confirmPasswordValue;
+
+    return (
+      password.length > 0 &&
+      confirmPassword.length > 0 &&
+      password === confirmPassword
+    );
+  }
+
+  // =========================================================
+  // FINAL RESET FORM VALIDATION
+  // =========================================================
+
+  isResetFormValid(): boolean {
+
+    if (!this.resetPasswordForm) {
+      return false;
+    }
+
+    const password = this.passwordValue;
+    const confirmPassword = this.confirmPasswordValue;
+
+    const passwordRequirementsValid =
+      password.length >= 8 &&
+      /[A-Z]/.test(password) &&
+      /[a-z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[@$!%*?&]/.test(password);
+
+    const passwordsAreEqual =
+      password.length > 0 &&
+      password === confirmPassword;
+
+    return (
+      passwordRequirementsValid &&
+      passwordsAreEqual &&
+      this.resetPasswordForm.valid
+    );
+  }
+
+  // =========================================================
+  // PASSWORD INPUT
+  // =========================================================
+
+  onPasswordInput(): void {
+
+    this.resetPasswordForm.updateValueAndValidity();
+
+    const confirmPassword =
+      this.resetPasswordForm.get('confirmPassword');
+
+    if (confirmPassword?.value) {
+      confirmPassword.markAsTouched();
+    }
+  }
+
+  onConfirmPasswordInput(): void {
+
+    this.resetPasswordForm.updateValueAndValidity();
+  }
+
+  // =========================================================
+  // STEP 1 - FORGOT PASSWORD
+  // =========================================================
+
   onSubmitForgotPassword(): void {
+
     if (this.forgotPasswordForm.invalid) {
+
       this.markFormGroupTouched(this.forgotPasswordForm);
+
       return;
     }
 
-    const email = this.forgotPasswordForm.get('email')?.value;
-    this.userEmail = email;
-    
-    // INSTANTLY move to next step
-    this.currentStep = 2;
-    this.otpSent = true;
-    this.startResendTimer();
-    
-    // Clear any previous messages
-    this.errorMessage = '';
-    this.successMessage = 'Sending OTP to your email...';
-    
-    // Make API call in background
-    this.isSendingOtp = true;
+    const email =
+      this.forgotPasswordForm.get('email')?.value;
+
+    this.userEmail.set(email);
+
+    this.errorMessage.set('');
+    this.successMessage.set('Sending OTP to your email...');
+
+    this.isSendingOtp.set(true);
+
     this.authService.forgotPassword(email).subscribe({
+
       next: (response) => {
-        this.isSendingOtp = false;
-        this.successMessage = response.message;
-        // Store email for next steps
-        localStorage.setItem('resetEmail', email);
-      },
-      error: (error) => {
-        this.isSendingOtp = false;
-        this.errorMessage = error.message || 'Failed to send OTP. Please try again.';
-        // Optionally go back if it fails
-        // this.currentStep = 1;
-      }
-    });
-  }
 
-  // Step 2: Verify OTP - INSTANT STEP CHANGE
-  onVerifyOtp(): void {
-    if (this.verifyOtpForm.invalid) {
-      this.markFormGroupTouched(this.verifyOtpForm);
-      return;
-    }
+        this.isSendingOtp.set(false);
 
-    const otp = this.verifyOtpForm.get('otp')?.value;
-    
-    // INSTANTLY move to next step
-    this.currentStep = 3;
-    this.otpVerified = true;
-    this.successMessage = 'Verifying OTP...';
-    
-    // Pre-fill reset password form
-    this.resetPasswordForm.patchValue({
-      email: this.userEmail
-    });
-    
-    // Make API call in background
-    this.isVerifyingOtp = true;
-    this.authService.verifyOtp(this.userEmail, otp).subscribe({
-      next: (response) => {
-        this.isVerifyingOtp = false;
-        this.successMessage = response.message;
-        if (response.resetToken) {
-          localStorage.setItem('resetToken', response.resetToken);
-        }
-      },
-      error: (error) => {
-        this.isVerifyingOtp = false;
-        this.errorMessage = error.message || 'Invalid OTP. Please try again.';
-        // Optionally go back if it fails
-        // this.currentStep = 2;
-      }
-    });
-  }
+        this.successMessage.set(response.message);
 
-  // Step 3: Reset Password - INSTANT SUCCESS
-  onSubmitResetPassword(): void {
-    if (this.resetPasswordForm.invalid) {
-      this.markFormGroupTouched(this.resetPasswordForm);
-      return;
-    }
+        this.otpSent.set(true);
 
-    const newPassword = this.resetPasswordForm.get('password')?.value;
-    const resetToken = this.authService.getStoredResetToken();
+        // Move to Step 2 ONLY after successful API response
+        this.currentStep.set(2);
 
-    if (!resetToken) {
-      this.errorMessage = 'Reset session expired. Please request a new OTP.';
-      this.currentStep = 1;
-      return;
-    }
-
-    // INSTANTLY show success
-    this.passwordReset = true;
-    this.successMessage = 'Resetting your password...';
-    
-    // Make API call in background
-    this.isResettingPassword = true;
-    this.authService.resetPassword(this.userEmail, resetToken, newPassword).subscribe({
-      next: (response) => {
-        this.isResettingPassword = false;
-        this.successMessage = response.message;
-        
-        if (response.warning) {
-          this.errorMessage = response.warning;
-        }
-        
-        // Clear stored data
-        this.authService.clearResetData();
-        
-        // Auto redirect to login after 3 seconds
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 3000);
-      },
-      error: (error) => {
-        this.isResettingPassword = false;
-        this.passwordReset = false;
-        this.errorMessage = error.message || 'Failed to reset password. Please try again.';
-      }
-    });
-  }
-
-  // Resend OTP
-  resendOtp(): void {
-    if (!this.canResendOtp) return;
-    
-    this.isSendingOtp = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    this.authService.forgotPassword(this.userEmail).subscribe({
-      next: (response) => {
-        this.isSendingOtp = false;
-        this.successMessage = 'New OTP sent to your email.';
-        this.canResendOtp = false;
-        this.resendTimer = 60;
         this.startResendTimer();
       },
+
       error: (error) => {
-        this.isSendingOtp = false;
-        this.errorMessage = error.message || 'Failed to resend OTP. Please try again.';
+
+        this.isSendingOtp.set(false);
+
+        this.errorMessage.set(
+          error.message ||
+          'Failed to send OTP. Please try again.'
+        );
       }
     });
   }
 
-  // Timer
+  // =========================================================
+  // STEP 2 - VERIFY OTP
+  // =========================================================
+
+  onVerifyOtp(): void {
+
+    if (this.verifyOtpForm.invalid) {
+
+      this.markFormGroupTouched(this.verifyOtpForm);
+
+      return;
+    }
+
+    const otp =
+      this.verifyOtpForm.get('otp')?.value;
+
+    this.errorMessage.set('');
+    this.successMessage.set('Verifying OTP...');
+
+    this.isVerifyingOtp.set(true);
+
+    this.authService
+      .verifyOtp(this.userEmail(), otp)
+      .subscribe({
+
+        next: (response) => {
+
+          this.isVerifyingOtp.set(false);
+
+          this.successMessage.set(response.message);
+
+          this.otpVerified.set(true);
+
+          // Move to Step 3 ONLY after successful OTP verification
+          this.currentStep.set(3);
+        },
+
+        error: (error) => {
+
+          this.isVerifyingOtp.set(false);
+
+          this.errorMessage.set(
+            error.message ||
+            'Invalid OTP. Please try again.'
+          );
+        }
+      });
+  }
+
+  // =========================================================
+  // STEP 3 - RESET PASSWORD
+  // =========================================================
+
+  onSubmitResetPassword(): void {
+
+    // Extra protection
+    // Do not call backend if password is invalid
+    if (!this.isResetFormValid()) {
+
+      this.markFormGroupTouched(this.resetPasswordForm);
+
+      this.resetPasswordForm.updateValueAndValidity();
+
+      return;
+    }
+
+    const newPassword = this.passwordValue;
+
+    const resetToken =
+      this.authService.getStoredResetToken();
+
+    if (!resetToken) {
+
+      this.errorMessage.set(
+        'Reset session expired. Please request a new OTP.'
+      );
+
+      this.currentStep.set(1);
+
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.successMessage.set('Resetting your password...');
+
+    this.isResettingPassword.set(true);
+
+    this.authService
+      .resetPassword(
+        this.userEmail(),
+        resetToken,
+        newPassword
+      )
+      .subscribe({
+
+        next: (response) => {
+
+          this.isResettingPassword.set(false);
+
+          this.passwordReset.set(true);
+
+          this.successMessage.set(response.message);
+
+          if (response.warning) {
+            this.errorMessage.set(response.warning);
+          }
+
+          this.authService.clearResetData();
+
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 3000);
+        },
+
+        error: (error) => {
+
+          this.isResettingPassword.set(false);
+
+          this.passwordReset.set(false);
+
+          this.errorMessage.set(
+            error.message ||
+            'Failed to reset password. Please try again.'
+          );
+        }
+      });
+  }
+
+  // =========================================================
+  // RESEND OTP
+  // =========================================================
+
+  resendOtp(): void {
+
+    if (!this.canResendOtp()) {
+      return;
+    }
+
+    this.isSendingOtp.set(true);
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.authService
+      .forgotPassword(this.userEmail())
+      .subscribe({
+
+        next: () => {
+
+          this.isSendingOtp.set(false);
+
+          this.successMessage.set(
+            'New OTP sent to your email.'
+          );
+
+          this.startResendTimer();
+        },
+
+        error: (error) => {
+
+          this.isSendingOtp.set(false);
+
+          this.errorMessage.set(
+            error.message ||
+            'Failed to resend OTP. Please try again.'
+          );
+        }
+      });
+  }
+
+  // =========================================================
+  // TIMER
+  // =========================================================
+
   startResendTimer(): void {
-    this.canResendOtp = false;
-    this.resendTimer = 60;
-    
+
+    this.canResendOtp.set(false);
+
+    this.resendTimer.set(60);
+
     this.clearResendTimer();
+
     this.resendInterval = setInterval(() => {
-      this.resendTimer--;
-      if (this.resendTimer === 0) {
-        this.canResendOtp = true;
+
+      this.resendTimer.update(
+        value => value - 1
+      );
+
+      if (this.resendTimer() <= 0) {
+
+        this.canResendOtp.set(true);
+
         this.clearResendTimer();
       }
+
     }, 1000);
   }
 
   clearResendTimer(): void {
+
     if (this.resendInterval) {
+
       clearInterval(this.resendInterval);
+
       this.resendInterval = null;
     }
   }
 
+  // =========================================================
+  // GO BACK
+  // =========================================================
+
   goBack(): void {
-    if (this.currentStep > 1) {
-      this.currentStep--;
-      if (this.currentStep === 1) {
-        this.otpSent = false;
-        this.otpVerified = false;
-      } else if (this.currentStep === 2) {
-        this.otpVerified = false;
+
+    if (this.currentStep() > 1) {
+
+      this.currentStep.update(
+        step => step - 1
+      );
+
+      if (this.currentStep() === 1) {
+
+        this.otpSent.set(false);
+        this.otpVerified.set(false);
+
+      } else if (this.currentStep() === 2) {
+
+        this.otpVerified.set(false);
       }
-      this.errorMessage = '';
-      this.successMessage = '';
+
+      this.errorMessage.set('');
+      this.successMessage.set('');
     }
   }
 
+  // =========================================================
+  // LOGIN
+  // =========================================================
+
   goToLogin(): void {
+
     this.authService.clearResetData();
+
     this.router.navigate(['/login']);
   }
 
+  // =========================================================
+  // FORM HELPERS
+  // =========================================================
+
   markFormGroupTouched(formGroup: FormGroup): void {
-    Object.values(formGroup.controls).forEach(control => {
-      control.markAsTouched();
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
-      }
-    });
+
+    Object.values(formGroup.controls)
+      .forEach(control => {
+
+        control.markAsTouched();
+
+        if (control instanceof FormGroup) {
+          this.markFormGroupTouched(control);
+        }
+      });
   }
 
-  getErrorMessage(formGroup: FormGroup, controlName: string): string {
-    const control = formGroup.get(controlName);
-    if (!control || !control.errors || !control.touched) return '';
-    
+  getErrorMessage(
+    formGroup: FormGroup,
+    controlName: string
+  ): string {
+
+    const control =
+      formGroup.get(controlName);
+
+    if (
+      !control ||
+      !control.errors ||
+      !control.touched
+    ) {
+      return '';
+    }
+
     const errors = control.errors;
-    
-    if (errors['required']) return `${this.getFieldLabel(controlName)} is required.`;
-    if (errors['email']) return 'Please enter a valid email address.';
-    if (errors['minlength']) return `${this.getFieldLabel(controlName)} must be at least ${errors['minlength'].requiredLength} characters.`;
-    if (errors['maxlength']) return `${this.getFieldLabel(controlName)} cannot exceed ${errors['maxlength'].requiredLength} characters.`;
+
+    if (errors['required']) {
+      return `${this.getFieldLabel(controlName)} is required.`;
+    }
+
+    if (errors['email']) {
+      return 'Please enter a valid email address.';
+    }
+
+    if (errors['minlength']) {
+      return `${this.getFieldLabel(controlName)} must be at least ${errors['minlength'].requiredLength} characters.`;
+    }
+
+    if (errors['maxlength']) {
+      return `${this.getFieldLabel(controlName)} cannot exceed ${errors['maxlength'].requiredLength} characters.`;
+    }
+
     if (errors['pattern']) {
+
       if (controlName === 'password') {
+
         return 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
       }
+
       if (controlName === 'otp') {
+
         return 'OTP must contain only numbers.';
       }
     }
-    if (errors['passwordMismatch']) return 'Passwords do not match.';
-    
+
+    if (errors['passwordMismatch']) {
+      return 'Passwords do not match.';
+    }
+
     return 'Invalid input.';
   }
 
   getFieldLabel(controlName: string): string {
-    const labels: {[key: string]: string} = {
+
+    const labels: Record<string, string> = {
+
       email: 'Email',
       otp: 'OTP',
       password: 'Password',
       confirmPassword: 'Confirm Password'
     };
+
     return labels[controlName] || controlName;
   }
 
+  // =========================================================
+  // PASSWORD VISIBILITY
+  // =========================================================
+
   togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+
+    this.showPassword.update(
+      value => !value
+    );
   }
 
   toggleConfirmPasswordVisibility(): void {
-    this.showConfirmPassword = !this.showConfirmPassword;
+
+    this.showConfirmPassword.update(
+      value => !value
+    );
   }
 
-  hasError(formGroup: FormGroup, controlName: string, errorType: string): boolean {
-    const control = formGroup.get(controlName);
-    return !!control && control.hasError(errorType) && control.touched;
+  // =========================================================
+  // ERROR CHECK
+  // =========================================================
+
+  hasError(
+    formGroup: FormGroup,
+    controlName: string,
+    errorType: string
+  ): boolean {
+
+    const control =
+      formGroup.get(controlName);
+
+    return !!control &&
+      control.hasError(errorType) &&
+      control.touched;
   }
 
-  getProgressPercentage(): number {
-    return ((this.currentStep - 1) / (this.maxSteps - 1)) * 100;
-  }
+  // =========================================================
+  // RESET FLOW
+  // =========================================================
 
   resetFlow(): void {
-    this.currentStep = 1;
-    this.otpSent = false;
-    this.otpVerified = false;
-    this.passwordReset = false;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.userEmail = '';
+
+    this.currentStep.set(1);
+
+    this.otpSent.set(false);
+    this.otpVerified.set(false);
+    this.passwordReset.set(false);
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.userEmail.set('');
+
     this.authService.clearResetData();
+
     this.initForms();
+
     this.clearResendTimer();
   }
 }
